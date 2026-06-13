@@ -29,3 +29,6 @@ node_modules/
 # Dropped screenshots (read, not versioned)
 /image.png
 /*.png
+
+# Map asset (external Forza image; referenced by path, not versioned)
+/*.jpg
