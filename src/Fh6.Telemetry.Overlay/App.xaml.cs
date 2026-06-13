@@ -1,6 +1,7 @@
 using System.Net;
 using System.Windows;
 using Fh6.Telemetry.Core;
+using Fh6.Telemetry.Overlay.Diagnostics;
 using Fh6.Telemetry.Overlay.Settings;
 using Fh6.Telemetry.Overlay.Telemetry;
 using Fh6.Telemetry.Overlay.ViewModels;
@@ -15,8 +16,11 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        OverlayLog.Reset();
         var config = ConfigStore.Load(ConfigStore.DefaultPath);
         ParseArgs(e.Args, config, out var replayFile, out var speed);
+        OverlayLog.Write($"config: port={config.Port} listen={config.ListenAddress} layout={config.Layout} " +
+                         $"mode={(replayFile is null ? "live-UDP" : "replay")} replay={replayFile ?? "-"}");
 
         // Ensure every WidgetId has a config entry (fills missing keys from the active seed).
         config.Normalize(config.Layout);
@@ -52,6 +56,8 @@ public partial class App : Application
                     ? addr
                     : IPAddress.Any;
                 source = new UdpTelemetrySource(address, config.Port);
+                OverlayLog.Write($"listening for UDP on {address}:{config.Port} " +
+                                 "(game Data Out IP must point at THIS pc, e.g. 127.0.0.1, same port)");
             }
 
             var honorTiming = replayFile is not null;
@@ -63,6 +69,7 @@ public partial class App : Application
         {
             // Keep the overlay alive (e.g. UDP port in use); surface the error instead of crashing.
             _pump = null;
+            OverlayLog.Write($"SOURCE ERROR: {ex.GetType().Name}: {ex.Message}");
             vm.SetStatus($"Telemetry source error: {ex.Message}");
         }
     }
