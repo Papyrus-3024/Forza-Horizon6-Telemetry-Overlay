@@ -1,3 +1,4 @@
+using Fh6.Telemetry.Core;
 using Fh6.Telemetry.Overlay.Layouts;
 using Fh6.Telemetry.Overlay.Widgets;
 
@@ -8,6 +9,15 @@ public enum OverlayLayout
     BottomStrip,
     CornerPanel,
     CenterDash,
+}
+
+/// <summary>FH6 Data Out exposes no season, so the map season is chosen manually.</summary>
+public enum MapSeason
+{
+    Spring,
+    Summer,
+    Autumn,
+    Winter,
 }
 
 /// <summary>
@@ -29,6 +39,15 @@ public sealed class OverlayConfig
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
     public double Scale { get; set; } = 1.0;
+
+    /// <summary>Optional explicit map image path. Null => use the seasonal map under assets/maps.</summary>
+    public string? MapImagePath { get; set; }
+
+    /// <summary>Which seasonal map to display (manual; FH6 telemetry has no season field).</summary>
+    public MapSeason Season { get; set; } = MapSeason.Summer;
+
+    /// <summary>Affine calibration mapping world X/Z to map pixels. Null => not yet calibrated.</summary>
+    public MapCalibration? MapCalibration { get; set; }
 
     /// <summary>
     /// Per-widget customization, keyed by <see cref="WidgetId.ToString()"/>.
