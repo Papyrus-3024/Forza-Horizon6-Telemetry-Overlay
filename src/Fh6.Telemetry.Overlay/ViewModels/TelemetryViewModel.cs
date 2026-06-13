@@ -27,6 +27,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private int? _prevGear;
 
     public string Speed { get; set; } = "0";
+    public string SpeedMph { get; set; } = "0";
     public string Gear { get; set; } = "N";
     public string Rpm { get; set; } = "0 / 0";
     public double RpmFraction { get; set; }
@@ -38,6 +39,11 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public string BrakePct { get; set; } = "0";
     public string ClutchPct { get; set; } = "0";
     public string Boost { get; set; } = "0.0";
+    public double GLat { get; set; }
+    public double GLong { get; set; }
+    public string GText { get; set; } = "0.0g";
+    public string PowerHp { get; set; } = "0";
+    public string TorqueLbFt { get; set; } = "0";
     public string Fuel { get; set; } = "0%";
     public string LapNumber { get; set; } = "0";
     public string Position { get; set; } = "-";
@@ -56,6 +62,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public void Update(in TelemetryReadout r)
     {
         Speed = $"{r.SpeedKmh:F0}";
+        SpeedMph = $"{r.SpeedMph:F0}";
         Gear = r.Gear == 0 ? "R" : r.Gear.ToString();
         Rpm = $"{r.Rpm:F0} / {r.MaxRpm:F0}";
         RpmFraction = r.RpmFraction;
@@ -67,6 +74,11 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         BrakePct = $"{r.BrakeFraction * 100:F0}";
         ClutchPct = $"{r.ClutchFraction * 100:F0}";
         Boost = $"{r.Boost:F1}";
+        GLat        = r.LatG;
+        GLong       = r.LongG;
+        GText       = $"{Math.Sqrt(r.LatG * r.LatG + r.LongG * r.LongG):F1}g";
+        PowerHp     = $"{r.PowerHp:F0}";
+        TorqueLbFt  = $"{r.TorqueLbFt:F0}";
         Fuel = $"{r.FuelPercent:F0}%";
         LapNumber = r.LapNumber.ToString();
         Position = r.RacePosition.ToString();
@@ -113,5 +125,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         nameof(Boost), nameof(Fuel), nameof(LapNumber), nameof(Position),
         nameof(CurrentLap), nameof(LastLap), nameof(BestLap), nameof(LastShift),
         nameof(Light1), nameof(Light2), nameof(Light3), nameof(Light4), nameof(Light5),
+        nameof(SpeedMph), nameof(GLat), nameof(GLong), nameof(GText),
+        nameof(PowerHp), nameof(TorqueLbFt),
     };
 }
