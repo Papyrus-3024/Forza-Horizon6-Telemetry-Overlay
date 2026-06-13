@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
         <StackPanel>
-            <TextBlock Text="KM/H" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
-            <TextBlock Text="{Binding Speed}" Foreground="White" FontSize="30" FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBlock Text="MPH" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
+            <TextBlock Text="{Binding SpeedMph}" Foreground="White" FontSize="30" FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBlock Text="{Binding Speed}" Foreground="#99FFFFFF" FontSize="11" FontFamily="Consolas"/>
+            <TextBlock Text="km/h" Foreground="#66FFFFFF" FontSize="8" FontFamily="Consolas"/>
         </StackPanel>
     </Border>
 </UserControl>
