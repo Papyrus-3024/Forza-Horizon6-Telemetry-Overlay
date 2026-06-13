@@ -7,10 +7,15 @@ namespace Fh6.Telemetry.Overlay.ViewModels;
 
 public sealed class TelemetryViewModel : INotifyPropertyChanged
 {
-    private static readonly Brush Off = Frozen(0x3a, 0x4a, 0x32);
-    private static readonly Brush Green = Frozen(0x5a, 0xd1, 0x5a);
-    private static readonly Brush Amber = Frozen(0xe0, 0xc9, 0x3a);
-    private static readonly Brush Red = Frozen(0xe0, 0x5a, 0x5a);
+    // Shift-light "off" dim color (same for all dots)
+    private static readonly Brush Off = Frozen(0x24, 0x30, 0x18);
+
+    // Shift-light "on" colors: green → green-yellow → yellow → orange → red
+    private static readonly Brush OnLight1 = Frozen(0x3F, 0xBF, 0x3F);
+    private static readonly Brush OnLight2 = Frozen(0x86, 0xC5, 0x3A);
+    private static readonly Brush OnLight3 = Frozen(0xE0, 0xC9, 0x3A);
+    private static readonly Brush OnLight4 = Frozen(0xE0, 0x8A, 0x3A);
+    private static readonly Brush OnLight5 = Frozen(0xE0, 0x5A, 0x5A);
 
     private static Brush Frozen(byte r, byte g, byte b)
     {
@@ -29,6 +34,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public double Brake { get; set; }
     public double Clutch { get; set; }
     public double Steer { get; set; }       // -1..1
+    public string ThrottlePct { get; set; } = "0";
+    public string BrakePct { get; set; } = "0";
+    public string ClutchPct { get; set; } = "0";
     public string Boost { get; set; } = "0.0";
     public string Fuel { get; set; } = "0%";
     public string LapNumber { get; set; } = "0";
@@ -55,6 +63,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         Brake = r.BrakeFraction;
         Clutch = r.ClutchFraction;
         Steer = r.SteerFraction;
+        ThrottlePct = $"{r.ThrottleFraction * 100:F0}";
+        BrakePct = $"{r.BrakeFraction * 100:F0}";
+        ClutchPct = $"{r.ClutchFraction * 100:F0}";
         Boost = $"{r.Boost:F1}";
         Fuel = $"{r.FuelPercent:F0}%";
         LapNumber = r.LapNumber.ToString();
@@ -68,11 +79,12 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         else if (shift == ShiftDirection.Down) LastShift = $"down -> {r.Gear}";
         _prevGear = r.Gear;
 
-        Light1 = r.ShiftLightStage >= 1 ? Green : Off;
-        Light2 = r.ShiftLightStage >= 2 ? Green : Off;
-        Light3 = r.ShiftLightStage >= 3 ? Green : Off;
-        Light4 = r.ShiftLightStage >= 4 ? Amber : Off;
-        Light5 = r.ShiftLightStage >= 5 ? Red : Off;
+        int stage = r.ShiftLightStage;
+        Light1 = stage >= 1 ? OnLight1 : Off;
+        Light2 = stage >= 2 ? OnLight2 : Off;
+        Light3 = stage >= 3 ? OnLight3 : Off;
+        Light4 = stage >= 4 ? OnLight4 : Off;
+        Light5 = stage >= 5 ? OnLight5 : Off;
 
         RaiseAll();
     }
@@ -97,6 +109,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     {
         nameof(Speed), nameof(Gear), nameof(Rpm), nameof(RpmFraction),
         nameof(Throttle), nameof(Brake), nameof(Clutch), nameof(Steer),
+        nameof(ThrottlePct), nameof(BrakePct), nameof(ClutchPct),
         nameof(Boost), nameof(Fuel), nameof(LapNumber), nameof(Position),
         nameof(CurrentLap), nameof(LastLap), nameof(BestLap), nameof(LastShift),
         nameof(Light1), nameof(Light2), nameof(Light3), nameof(Light4), nameof(Light5),

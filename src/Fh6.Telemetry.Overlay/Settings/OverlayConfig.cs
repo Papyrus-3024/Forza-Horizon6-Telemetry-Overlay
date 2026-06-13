@@ -15,4 +15,5 @@ public sealed class OverlayConfig
     public double Opacity { get; set; } = 0.9;
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
+    public double Scale { get; set; } = 1.0;
 }
