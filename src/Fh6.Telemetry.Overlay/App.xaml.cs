@@ -45,6 +45,14 @@ public partial class App : Application
     {
         try
         {
+            if (replayFile is not null && !System.IO.File.Exists(replayFile))
+            {
+                var full = System.IO.Path.GetFullPath(replayFile);
+                OverlayLog.Write($"replay file not found: {full} — falling back to live UDP");
+                vm.SetStatus($"Replay not found, using live: {replayFile}");
+                replayFile = null;
+            }
+
             ITelemetrySource source;
             if (replayFile is not null)
             {
