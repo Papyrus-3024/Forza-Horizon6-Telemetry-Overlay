@@ -1,0 +1,16 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Layouts.CenterDashLayout"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:w="clr-namespace:Fh6.Telemetry.Overlay.Widgets">
+    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+        <w:PedalsSteerWidget Margin="3" VerticalAlignment="Bottom"/>
+        <StackPanel Margin="12,0">
+            <w:RpmShiftWidget Margin="3"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <w:GearWidget Margin="3"/>
+                <w:SpeedWidget Margin="3"/>
+            </StackPanel>
+        </StackPanel>
+        <w:LapTimingWidget Margin="3" VerticalAlignment="Bottom"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,11 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.BoostWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
+        <StackPanel>
+            <TextBlock Text="BOOST psi" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
+            <TextBlock Text="{Binding Boost}" Foreground="White" FontSize="18" FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBlock Text="{Binding Fuel}" Foreground="#CCFFFFFF" FontSize="11" FontFamily="Consolas"/>
+        </StackPanel>
+    </Border>
+</UserControl>
