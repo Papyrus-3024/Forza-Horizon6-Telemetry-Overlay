@@ -22,3 +22,6 @@ node_modules/
 
 # Raw telemetry captures (large; not source). Trimmed test fixtures live under the test project.
 /capture-*.jsonl
+
+# Visual brainstorm companion
+.superpowers/
