@@ -14,6 +14,9 @@ public partial class FreeLayout : UserControl
     // Maps each WidgetId to its FrameworkElement (the widget UserControl itself).
     private readonly Dictionary<WidgetId, FrameworkElement> _widgets;
 
+    // Held separately so ApplyConfig can call Configure() without casting.
+    private readonly MapWidget _mapWidget;
+
     // Edit-mode state
     private bool _editMode;
 
@@ -27,8 +30,9 @@ public partial class FreeLayout : UserControl
     {
         InitializeComponent();
 
-        // Instantiate the six widgets once.
+        // Instantiate widgets once.
         var gForceWidget = new GForceWidget();
+        _mapWidget = new MapWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
@@ -40,6 +44,7 @@ public partial class FreeLayout : UserControl
             [WidgetId.LapTiming]   = new LapTimingWidget(),
             [WidgetId.GForce]      = gForceWidget,
             [WidgetId.PowerTorque] = new PowerTorqueWidget(),
+            [WidgetId.MiniMap]     = _mapWidget,
         };
 
         foreach (var w in _widgets.Values)
@@ -50,6 +55,12 @@ public partial class FreeLayout : UserControl
         var longBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.DisplayedGLong)) { Mode = System.Windows.Data.BindingMode.OneWay };
         System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LatGProperty,  latBinding);
         System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LongGProperty, longBinding);
+
+        // Bind MapWidget DependencyProperties to the ViewModel via inherited DataContext.
+        var wxBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.WorldX)) { Mode = System.Windows.Data.BindingMode.OneWay };
+        var wzBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.WorldZ)) { Mode = System.Windows.Data.BindingMode.OneWay };
+        System.Windows.Data.BindingOperations.SetBinding(_mapWidget, MapWidget.WorldXProperty, wxBinding);
+        System.Windows.Data.BindingOperations.SetBinding(_mapWidget, MapWidget.WorldZProperty, wzBinding);
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;
@@ -71,6 +82,9 @@ public partial class FreeLayout : UserControl
     /// </summary>
     public void ApplyConfig(OverlayConfig cfg)
     {
+        // Reload map image and calibration whenever config changes.
+        _mapWidget.Configure(MapImageResolver.Resolve(cfg), cfg.MapCalibration);
+
         var seeds = LayoutSeeds.For(cfg.Layout);
         var globalScale = Math.Clamp(cfg.Scale, 0.5, 3.0);
 

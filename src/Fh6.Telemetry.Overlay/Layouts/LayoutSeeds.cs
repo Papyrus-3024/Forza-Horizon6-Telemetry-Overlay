@@ -24,6 +24,7 @@ public static class LayoutSeeds
     // BottomStrip: compact horizontal row at Y=8, ~8px gaps between widgets.
     // Approximate rendered widths (theme paddings included):
     //   Gear ~68, Speed ~90, RpmShift ~176, PedalsSteer ~80, Boost ~96, LapTiming ~156, GForce ~96, PowerTorque ~102
+    // MiniMap (~240x240) placed top-right area, away from the strip.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> BottomStrip =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -35,6 +36,7 @@ public static class LayoutSeeds
             [WidgetId.LapTiming]   = new(558,  8),
             [WidgetId.GForce]      = new(722,  8),
             [WidgetId.PowerTorque] = new(826,  8),
+            [WidgetId.MiniMap]     = new(936,  8),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -43,6 +45,7 @@ public static class LayoutSeeds
     // Row 3 (Y=148): PedalsSteer | Boost (side by side)
     // Row 4 (Y=246): LapTiming
     // Row 5 (Y=320): GForce | PowerTorque
+    // MiniMap (~240x240) below the cluster.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CornerPanel =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -54,11 +57,12 @@ public static class LayoutSeeds
             [WidgetId.LapTiming]   = new(  8, 248),
             [WidgetId.GForce]      = new(  8, 330),
             [WidgetId.PowerTorque] = new(112, 330),
+            [WidgetId.MiniMap]     = new(  8, 444),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
     // PedalsSteer left of center, RpmShift above Gear/Speed, LapTiming right of center.
-    // Non-essential widgets hidden.
+    // Non-essential widgets hidden. MiniMap visible, placed top-right corner.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -70,5 +74,6 @@ public static class LayoutSeeds
             [WidgetId.Boost]       = new(690, 900, Visible: false),
             [WidgetId.GForce]      = new(690, 984, Visible: false),
             [WidgetId.PowerTorque] = new(790, 984, Visible: false),
+            [WidgetId.MiniMap]     = new(1680,  8),
         };
 }
