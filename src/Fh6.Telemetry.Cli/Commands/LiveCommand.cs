@@ -23,6 +23,11 @@ public sealed class LiveCommand : Command<LiveCommand.Settings>
             source.Dispose();
         };
 
+        // Plain line so there's visible feedback even where the live dashboard can't render
+        // (e.g. the Visual Studio debug console). Run from a real terminal for the dashboard.
+        Console.WriteLine($"fh6 live: listening on UDP :{settings.Port}. " +
+                          "Drive in-game (FH6 only sends while driving). Ctrl-C to stop.");
+
         var dashboard = new SpectreDashboard();
         dashboard.Run(render =>
         {
