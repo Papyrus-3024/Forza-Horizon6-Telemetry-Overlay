@@ -11,6 +11,7 @@ namespace Fh6.Telemetry.Overlay;
 
 public partial class OverlayWindow : Window
 {
+    private const uint VK_F7 = 0x76;
     private const uint VK_F8 = 0x77;
     private const uint VK_F9 = 0x78;
     private const uint VK_F10 = 0x79;
@@ -33,6 +34,9 @@ public partial class OverlayWindow : Window
         if (config.WindowLeft is double l) Left = l;
         if (config.WindowTop is double t) Top = t;
 
+        var scale = Math.Clamp(config.Scale, 0.5, 3.0);
+        LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(scale, scale);
+
         ApplyLayout(config.Layout);
         SourceInitialized += OnSourceInitialized;
         MouseLeftButtonDown += (_, _) => { if (_editMode) DragMove(); };
@@ -44,6 +48,8 @@ public partial class OverlayWindow : Window
         ClickThrough.SetClickThrough(_hwnd, true); // start click-through
 
         _hotkeys = new GlobalHotkey(_hwnd);
+        // F7: quit from gameplay without needing to focus the overlay
+        _hotkeys.Register(VK_F7, () => Application.Current.Shutdown());
         _hotkeys.Register(VK_F8, ToggleEditMode);
         _hotkeys.Register(VK_F9, OpenSettings);
         _hotkeys.Register(VK_F10, CycleLayout);
@@ -57,6 +63,7 @@ public partial class OverlayWindow : Window
             ? System.Windows.Media.Brushes.Yellow
             : System.Windows.Media.Brushes.Transparent;
         Root.BorderThickness = new Thickness(_editMode ? 2 : 0);
+        ResizeGrip.Visibility = _editMode ? Visibility.Visible : Visibility.Collapsed;
 
         if (!_editMode)
         {
@@ -81,6 +88,8 @@ public partial class OverlayWindow : Window
                 {
                     Opacity = Math.Clamp(_config.Opacity, 0.2, 1.0);
                     ApplyLayout(_config.Layout);
+                    var s = Math.Clamp(_config.Scale, 0.5, 3.0);
+                    LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(s, s);
                     ConfigStore.Save(ConfigStore.DefaultPath, _config);
                     SettingsApplied?.Invoke(this, EventArgs.Empty);
                 }
@@ -114,6 +123,22 @@ public partial class OverlayWindow : Window
         };
         view.DataContext = _viewModel;
         LayoutHost.Content = view;
+    }
+
+    private void Root_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        => QuitButton.Opacity = 1;
+
+    private void Root_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        => QuitButton.Opacity = 0;
+
+    private void QuitButton_Click(object sender, RoutedEventArgs e)
+        => Application.Current.Shutdown();
+
+    private void ResizeGrip_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+    {
+        var s = Math.Clamp(_config.Scale + e.VerticalChange / 200.0, 0.5, 3.0);
+        _config.Scale = s;
+        LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(s, s);
     }
 
     /// <summary>Raised after settings change so the host can restart the source if port/address changed.</summary>
