@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Fh6.Telemetry.Overlay.Interop;
 using Fh6.Telemetry.Overlay.Layouts;
 using Fh6.Telemetry.Overlay.Settings;
@@ -22,6 +24,10 @@ public partial class OverlayWindow : Window
     private IntPtr _hwnd;
     private bool _editMode;
     private bool _settingsOpen;
+
+    // Animation tick — driven by CompositionTarget.Rendering
+    private readonly Stopwatch _renderClock = new();
+    private long _lastRenderTicks;
 
     public OverlayWindow(TelemetryViewModel viewModel, OverlayConfig config)
     {
@@ -45,6 +51,9 @@ public partial class OverlayWindow : Window
 
         SourceInitialized += OnSourceInitialized;
 
+        Loaded += OnLoaded;
+        Closed += OnWindowClosed;
+
         // Whole-window DragMove fallback: fires when the mouse-down is on empty canvas,
         // i.e. when FreeLayout did NOT capture the mouse (no widget was hit in edit mode).
         MouseLeftButtonDown += (_, e) =>
@@ -52,6 +61,30 @@ public partial class OverlayWindow : Window
             if (_editMode && !FreeLayoutHost.IsMouseCaptureWithin)
                 DragMove();
         };
+    }
+
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        _renderClock.Start();
+        _lastRenderTicks = _renderClock.ElapsedTicks;
+        CompositionTarget.Rendering += OnRendering;
+    }
+
+    private void OnWindowClosed(object? sender, EventArgs e)
+    {
+        CompositionTarget.Rendering -= OnRendering;
+    }
+
+    private void OnRendering(object? sender, EventArgs e)
+    {
+        var now = _renderClock.ElapsedTicks;
+        var dtSeconds = (now - _lastRenderTicks) / (double)Stopwatch.Frequency;
+        _lastRenderTicks = now;
+
+        // Guard against first-frame spike or system sleep resumption.
+        if (dtSeconds > 0.25) dtSeconds = 0.25;
+
+        _viewModel.Tick(dtSeconds);
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)

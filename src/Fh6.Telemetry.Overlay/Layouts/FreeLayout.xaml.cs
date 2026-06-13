@@ -46,8 +46,8 @@ public partial class FreeLayout : UserControl
             Surface.Children.Add(w);
 
         // Bind GForceWidget DependencyProperties to the ViewModel via inherited DataContext.
-        var latBinding  = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.GLat))  { Mode = System.Windows.Data.BindingMode.OneWay };
-        var longBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.GLong)) { Mode = System.Windows.Data.BindingMode.OneWay };
+        var latBinding  = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.DisplayedGLat))  { Mode = System.Windows.Data.BindingMode.OneWay };
+        var longBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.DisplayedGLong)) { Mode = System.Windows.Data.BindingMode.OneWay };
         System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LatGProperty,  latBinding);
         System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LongGProperty, longBinding);
 
