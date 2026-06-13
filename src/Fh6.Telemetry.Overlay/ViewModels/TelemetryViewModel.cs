@@ -7,10 +7,17 @@ namespace Fh6.Telemetry.Overlay.ViewModels;
 
 public sealed class TelemetryViewModel : INotifyPropertyChanged
 {
-    private static readonly Brush Off = new SolidColorBrush(Color.FromRgb(0x3a, 0x4a, 0x32));
-    private static readonly Brush Green = new SolidColorBrush(Color.FromRgb(0x5a, 0xd1, 0x5a));
-    private static readonly Brush Amber = new SolidColorBrush(Color.FromRgb(0xe0, 0xc9, 0x3a));
-    private static readonly Brush Red = new SolidColorBrush(Color.FromRgb(0xe0, 0x5a, 0x5a));
+    private static readonly Brush Off = Frozen(0x3a, 0x4a, 0x32);
+    private static readonly Brush Green = Frozen(0x5a, 0xd1, 0x5a);
+    private static readonly Brush Amber = Frozen(0xe0, 0xc9, 0x3a);
+    private static readonly Brush Red = Frozen(0xe0, 0x5a, 0x5a);
+
+    private static Brush Frozen(byte r, byte g, byte b)
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+        brush.Freeze();
+        return brush;
+    }
 
     private int? _prevGear;
 
@@ -30,6 +37,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public string LastLap { get; private set; } = "--:--.---";
     public string BestLap { get; private set; } = "--:--.---";
     public string LastShift { get; private set; } = "-";
+    public string Status { get; private set; } = "";
 
     public Brush Light1 { get; private set; } = Off;
     public Brush Light2 { get; private set; } = Off;
@@ -67,6 +75,13 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         Light5 = r.ShiftLightStage >= 5 ? Red : Off;
 
         RaiseAll();
+    }
+
+    /// <summary>Sets a status line (e.g. a telemetry-source error) and notifies the UI.</summary>
+    public void SetStatus(string status)
+    {
+        Status = status;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status)));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

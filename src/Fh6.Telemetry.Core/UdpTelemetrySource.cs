@@ -9,7 +9,10 @@ public sealed class UdpTelemetrySource : ITelemetrySource, IDisposable
     private readonly UdpClient _client;
     private readonly Stopwatch _clock = Stopwatch.StartNew();
 
-    public UdpTelemetrySource(int port) => _client = new UdpClient(port);
+    public UdpTelemetrySource(int port) : this(IPAddress.Any, port) { }
+
+    public UdpTelemetrySource(IPAddress address, int port)
+        => _client = new UdpClient(new IPEndPoint(address, port));
 
     public IEnumerable<CaptureFrame> Frames()
     {

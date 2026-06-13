@@ -20,6 +20,7 @@ public partial class OverlayWindow : Window
     private GlobalHotkey? _hotkeys;
     private IntPtr _hwnd;
     private bool _editMode;
+    private bool _settingsOpen;
 
     public OverlayWindow(TelemetryViewModel viewModel, OverlayConfig config)
     {
@@ -28,7 +29,7 @@ public partial class OverlayWindow : Window
         _config = config;
         DataContext = viewModel;
 
-        Opacity = config.Opacity;
+        Opacity = Math.Clamp(config.Opacity, 0.2, 1.0);
         if (config.WindowLeft is double l) Left = l;
         if (config.WindowTop is double t) Top = t;
 
@@ -67,14 +68,28 @@ public partial class OverlayWindow : Window
 
     private void OpenSettings()
     {
-        var dialog = new SettingsWindow(_config) { Owner = this };
-        if (dialog.ShowDialog() == true)
+        if (_settingsOpen) return;
+
+        // Open off the hotkey hook's WndProc to avoid running a modal loop reentrantly.
+        Dispatcher.BeginInvoke(new Action(() =>
         {
-            Opacity = _config.Opacity;
-            ApplyLayout(_config.Layout);
-            ConfigStore.Save(ConfigStore.DefaultPath, _config);
-            SettingsApplied?.Invoke(this, EventArgs.Empty);
-        }
+            _settingsOpen = true;
+            try
+            {
+                var dialog = new SettingsWindow(_config) { Owner = this };
+                if (dialog.ShowDialog() == true)
+                {
+                    Opacity = Math.Clamp(_config.Opacity, 0.2, 1.0);
+                    ApplyLayout(_config.Layout);
+                    ConfigStore.Save(ConfigStore.DefaultPath, _config);
+                    SettingsApplied?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            finally
+            {
+                _settingsOpen = false;
+            }
+        }));
     }
 
     private void CycleLayout()

@@ -11,6 +11,9 @@
         SizeToContent="WidthAndHeight"
         Left="40" Top="40">
     <Border x:Name="Root" Padding="6" Background="#01000000">
-        <ContentControl x:Name="LayoutHost" />
+        <StackPanel>
+            <TextBlock Text="{Binding Status}" Foreground="#FFE05A5A" FontFamily="Consolas" FontSize="11"/>
+            <ContentControl x:Name="LayoutHost" />
+        </StackPanel>
     </Border>
 </Window>
