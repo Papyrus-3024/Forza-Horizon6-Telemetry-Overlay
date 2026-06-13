@@ -29,6 +29,17 @@
             <StackPanel x:Name="WidgetRows"/>
         </ScrollViewer>
 
+        <TextBlock Text="Saved layouts" Margin="0,0,0,4"/>
+        <ComboBox x:Name="SavedLayoutBox" Margin="0,2,0,6"/>
+        <TextBox x:Name="LayoutNameBox" Margin="0,0,0,6"
+                 ToolTip="Type a name to save or rename to"/>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+            <Button x:Name="SaveLayoutBtn"   Content="Save"   Width="58" Margin="0,0,6,0" Click="OnSaveLayout"/>
+            <Button x:Name="LoadLayoutBtn"   Content="Load"   Width="58" Margin="0,0,6,0" Click="OnLoadLayout"/>
+            <Button x:Name="RenameLayoutBtn" Content="Rename" Width="58" Margin="0,0,6,0" Click="OnRenameLayout"/>
+            <Button x:Name="DeleteLayoutBtn" Content="Delete" Width="58"                  Click="OnDeleteLayout"/>
+        </StackPanel>
+
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" Width="70" Margin="0,0,8,0" IsCancel="True"/>
             <Button Content="Apply" Width="70" Click="OnApply" IsDefault="True"/>
