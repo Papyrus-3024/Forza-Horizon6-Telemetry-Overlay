@@ -22,7 +22,7 @@ public sealed class ReplayCommand : Command<ReplayCommand.Settings>
         public bool Loop { get; init; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken = default)
     {
         var source = new JsonlReplaySource(settings.File);
         var dashboard = new SpectreDashboard();

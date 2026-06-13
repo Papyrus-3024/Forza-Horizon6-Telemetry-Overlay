@@ -19,7 +19,7 @@ public sealed class CaptureCommand : Command<CaptureCommand.Settings>
         public string? Out { get; init; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken = default)
     {
         var outPath = settings.Out ?? $"capture-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.jsonl";
 
