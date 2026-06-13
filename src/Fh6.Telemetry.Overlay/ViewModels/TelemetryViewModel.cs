@@ -47,6 +47,10 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public string LastShift { get; set; } = "-";
     public string Status { get; set; } = "";
 
+    // ── World position (ground plane) ────────────────────────────────────────
+    public double WorldX { get; set; }
+    public double WorldZ { get; set; }
+
     public Brush Light1 { get; set; } = Off;
     public Brush Light2 { get; set; } = Off;
     public Brush Light3 { get; set; } = Off;
@@ -111,6 +115,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         CurrentLap = LapTime.Format(r.CurrentLap);
         LastLap = LapTime.Format(r.LastLap);
         BestLap = LapTime.Format(r.BestLap);
+
+        WorldX = r.PositionX;
+        WorldZ = r.PositionZ;
 
         var shift = GearShifts.Detect(_prevGear, r.Gear);
         if (shift == ShiftDirection.Up) LastShift = $"up -> {r.Gear}";
@@ -183,6 +190,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         nameof(CurrentLap), nameof(LastLap), nameof(BestLap), nameof(LastShift),
         nameof(Light1), nameof(Light2), nameof(Light3), nameof(Light4), nameof(Light5),
         nameof(GText), nameof(PowerHp), nameof(TorqueLbFt),
+        nameof(WorldX), nameof(WorldZ),
     };
 
     private static readonly string[] SmoothedNames =

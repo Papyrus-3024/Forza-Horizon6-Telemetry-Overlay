@@ -36,6 +36,7 @@ public readonly struct TelemetryReadout
         Acceleration = p.Acceleration;
         Power = p.Power;
         Torque = p.Torque;
+        Position = p.Position;
     }
 
     public bool IsRaceOn { get; }
@@ -60,6 +61,11 @@ public readonly struct TelemetryReadout
     public Vec3 Acceleration { get; }
     public float Power { get; }
     public float Torque { get; }
+    public Vec3 Position { get; }
+
+    // World ground-plane coordinates (X/Z are the ground plane, Y is altitude)
+    public float PositionX => Position.X;
+    public float PositionZ => Position.Z;
 
     // Unit conversions
     public float SpeedMph  => SpeedMs * 2.2369363f;
