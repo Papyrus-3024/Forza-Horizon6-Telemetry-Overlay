@@ -21,29 +21,29 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
 
     private int? _prevGear;
 
-    public string Speed { get; private set; } = "0";
-    public string Gear { get; private set; } = "N";
-    public string Rpm { get; private set; } = "0 / 0";
-    public double RpmFraction { get; private set; }
-    public double Throttle { get; private set; }
-    public double Brake { get; private set; }
-    public double Clutch { get; private set; }
-    public double Steer { get; private set; }       // -1..1
-    public string Boost { get; private set; } = "0.0";
-    public string Fuel { get; private set; } = "0%";
-    public string LapNumber { get; private set; } = "0";
-    public string Position { get; private set; } = "-";
-    public string CurrentLap { get; private set; } = "--:--.---";
-    public string LastLap { get; private set; } = "--:--.---";
-    public string BestLap { get; private set; } = "--:--.---";
-    public string LastShift { get; private set; } = "-";
-    public string Status { get; private set; } = "";
+    public string Speed { get; set; } = "0";
+    public string Gear { get; set; } = "N";
+    public string Rpm { get; set; } = "0 / 0";
+    public double RpmFraction { get; set; }
+    public double Throttle { get; set; }
+    public double Brake { get; set; }
+    public double Clutch { get; set; }
+    public double Steer { get; set; }       // -1..1
+    public string Boost { get; set; } = "0.0";
+    public string Fuel { get; set; } = "0%";
+    public string LapNumber { get; set; } = "0";
+    public string Position { get; set; } = "-";
+    public string CurrentLap { get; set; } = "--:--.---";
+    public string LastLap { get; set; } = "--:--.---";
+    public string BestLap { get; set; } = "--:--.---";
+    public string LastShift { get; set; } = "-";
+    public string Status { get; set; } = "";
 
-    public Brush Light1 { get; private set; } = Off;
-    public Brush Light2 { get; private set; } = Off;
-    public Brush Light3 { get; private set; } = Off;
-    public Brush Light4 { get; private set; } = Off;
-    public Brush Light5 { get; private set; } = Off;
+    public Brush Light1 { get; set; } = Off;
+    public Brush Light2 { get; set; } = Off;
+    public Brush Light3 { get; set; } = Off;
+    public Brush Light4 { get; set; } = Off;
+    public Brush Light5 { get; set; } = Off;
 
     public void Update(in TelemetryReadout r)
     {

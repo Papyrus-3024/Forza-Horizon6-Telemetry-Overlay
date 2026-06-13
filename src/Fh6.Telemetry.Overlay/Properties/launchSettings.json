@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Fh6.Telemetry.Overlay": {
+      "commandName": "Project",
+      "commandLineArgs": "-- --replay \"capture-1781375262939.jsonl\" --speed 2"
+    }
+  }
+}

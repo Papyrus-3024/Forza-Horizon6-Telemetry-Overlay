@@ -11,7 +11,7 @@
                 <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light5}"/>
             </StackPanel>
             <TextBlock Text="{Binding Rpm}" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
-            <ProgressBar Height="7" Minimum="0" Maximum="1" Value="{Binding RpmFraction}"
+            <ProgressBar Height="7" Minimum="0" Maximum="1" Value="{Binding RpmFraction, Mode=OneWay}"
                          Foreground="#5AD15A" Background="#2C3A26" BorderThickness="0"/>
         </StackPanel>
     </Border>
