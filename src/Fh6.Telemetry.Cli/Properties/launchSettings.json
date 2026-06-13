@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Fh6.Telemetry.Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "capture"
+    }
+  }
+}

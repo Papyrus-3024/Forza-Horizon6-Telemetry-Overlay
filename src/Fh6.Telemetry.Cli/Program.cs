@@ -11,7 +11,5 @@ app.Configure(config =>
         .WithDescription("Replay a capture file to the dashboard.");
     config.AddCommand<LiveCommand>("live")
         .WithDescription("Show the live telemetry dashboard from UDP.");
-    config.AddCommand<CoverageCommand>("coverage")
-        .WithDescription("Report telemetry-condition coverage of a capture (temporary).");
 });
 return app.Run(args);

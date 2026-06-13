@@ -87,7 +87,10 @@ idle/max context), throttle/brake/clutch/handbrake inputs, steering, per-wheel t
 and temperature, boost, fuel, and lap/position info. Exact layout finalized during
 implementation; the renderer is swappable behind `IDashboard`.
 
-## Capture coverage tracker (temporary)
+## Capture coverage tracker (temporary) — REMOVED 2026-06-13
+
+Status: implemented, used to validate captures, then retired (captures confirmed sufficient;
+only the rumble-strip condition was left for a later capture). Kept below for design history.
 
 A throwaway aid for manual testing: it confirms that a new in-game capture actually
 exercised every family of packet fields, so the team knows the captures are good before
