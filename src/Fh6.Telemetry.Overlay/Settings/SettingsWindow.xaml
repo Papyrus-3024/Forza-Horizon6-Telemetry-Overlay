@@ -18,7 +18,16 @@
 
         <TextBlock Text="Opacity"/>
         <Slider x:Name="OpacitySlider" Minimum="0.2" Maximum="1.0" TickFrequency="0.05"
+                IsSnapToTickEnabled="True" Margin="0,2,0,10"/>
+
+        <TextBlock Text="HUD scale"/>
+        <Slider x:Name="HudScaleSlider" Minimum="0.5" Maximum="2.5" TickFrequency="0.05"
                 IsSnapToTickEnabled="True" Margin="0,2,0,14"/>
+
+        <TextBlock Text="Widgets" Margin="0,0,0,4"/>
+        <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,14">
+            <StackPanel x:Name="WidgetRows"/>
+        </ScrollViewer>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" Width="70" Margin="0,0,8,0" IsCancel="True"/>
