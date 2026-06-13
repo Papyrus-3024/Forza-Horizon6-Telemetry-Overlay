@@ -18,7 +18,7 @@ public sealed class CoverageTracker
         new("Handbrake used", p => p.HandBrake > 0),
         new("Full steer left", p => p.Steer <= -120),
         new("Full steer right", p => p.Steer >= 120),
-        new("Reverse gear", p => p.Gear == 0),
+        new("Reverse gear", p => p.Gear == 0 && p.IsRaceOn == 1),
         new("High gear (>=5)", p => p.Gear >= 5),
         new("Near redline", p => p.EngineMaxRpm > 0 && p.CurrentEngineRpm >= 0.95f * p.EngineMaxRpm),
         new("High slip ratio", p => p.TireSlipRatio.Any(v => Math.Abs(v) > 1f)),
