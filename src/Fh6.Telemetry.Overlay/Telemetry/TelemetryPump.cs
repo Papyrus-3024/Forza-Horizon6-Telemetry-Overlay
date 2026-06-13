@@ -1,5 +1,6 @@
 using System.Windows.Threading;
 using Fh6.Telemetry.Core;
+using Fh6.Telemetry.Overlay.Diagnostics;
 using Fh6.Telemetry.Overlay.ViewModels;
 
 namespace Fh6.Telemetry.Overlay.Telemetry;
@@ -21,6 +22,8 @@ public sealed class TelemetryPump : IDisposable
     private TelemetryReadout _latest;
     private bool _pending;
     private volatile bool _running = true;
+    private long _received;
+    private Timer? _watchdog;
 
     public TelemetryPump(
         ITelemetrySource source,
@@ -37,7 +40,19 @@ public sealed class TelemetryPump : IDisposable
         _thread = new Thread(Run) { IsBackground = true, Name = "TelemetryPump" };
     }
 
-    public void Start() => _thread.Start();
+    public void Start()
+    {
+        _thread.Start();
+        // One-shot watchdog: if nothing arrived after 6s, log a hint (the common cause is the
+        // game's Data Out IP not pointing at this PC, a port mismatch, or a second listener).
+        _watchdog = new Timer(_ =>
+        {
+            if (Interlocked.Read(ref _received) == 0)
+                OverlayLog.Write("WATCHDOG: no packets after 6s. Check FH6 Data Out is ON, its IP " +
+                                 "points at THIS pc (127.0.0.1 if same machine), the port matches, " +
+                                 "and no other app is bound to the port.");
+        }, null, 6000, Timeout.Infinite);
+    }
 
     private void Run()
     {
@@ -47,6 +62,12 @@ public sealed class TelemetryPump : IDisposable
             foreach (var frame in _source.Frames())
             {
                 if (!_running) break;
+
+                var count = Interlocked.Increment(ref _received);
+                if (count == 1)
+                    OverlayLog.Write($"first packet received ({frame.Data.Length} bytes)");
+                else if (count % 600 == 0)
+                    OverlayLog.Write($"received {count} packets");
 
                 if (_honorTiming && prevT is double previous)
                 {
@@ -71,9 +92,10 @@ public sealed class TelemetryPump : IDisposable
                     _dispatcher.BeginInvoke(PublishLatest);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Source closed/disposed during shutdown; end the loop quietly.
+            if (_running) OverlayLog.Write($"pump loop ended: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
@@ -91,6 +113,7 @@ public sealed class TelemetryPump : IDisposable
     public void Dispose()
     {
         _running = false;
+        _watchdog?.Dispose();
         (_source as IDisposable)?.Dispose();
         if (_thread.IsAlive)
             _thread.Join(TimeSpan.FromSeconds(1));

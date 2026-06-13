@@ -269,8 +269,28 @@ public partial class FreeLayout : UserControl
         {
             if (current is FrameworkElement fe && Surface.Children.Contains(fe))
                 return fe;
-            current = VisualTreeHelper.GetParent(current);
+            current = GetParentObject(current);
         }
         return null;
+    }
+
+    /// <summary>
+    /// Returns the parent of a node, handling both Visuals and content elements (e.g. a
+    /// <see cref="System.Windows.Documents.Run"/> inside a TextBlock). VisualTreeHelper.GetParent
+    /// throws on non-Visuals, which is what caused the drag crash when clicking lap text.
+    /// </summary>
+    private static DependencyObject? GetParentObject(DependencyObject obj)
+    {
+        if (obj is Visual or System.Windows.Media.Media3D.Visual3D)
+            return VisualTreeHelper.GetParent(obj);
+
+        if (obj is ContentElement contentElement)
+        {
+            var parent = ContentOperations.GetParent(contentElement);
+            if (parent is not null) return parent;
+            return contentElement is FrameworkContentElement fce ? fce.Parent : null;
+        }
+
+        return LogicalTreeHelper.GetParent(obj);
     }
 }
