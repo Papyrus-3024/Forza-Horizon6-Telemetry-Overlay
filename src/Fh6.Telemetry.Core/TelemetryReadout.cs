@@ -33,6 +33,9 @@ public readonly struct TelemetryReadout
         BestLap = p.BestLap;
         LastLap = p.LastLap;
         CurrentLap = p.CurrentLap;
+        Acceleration = p.Acceleration;
+        Power = p.Power;
+        Torque = p.Torque;
     }
 
     public bool IsRaceOn { get; }
@@ -54,4 +57,15 @@ public readonly struct TelemetryReadout
     public float BestLap { get; }
     public float LastLap { get; }
     public float CurrentLap { get; }
+    public Vec3 Acceleration { get; }
+    public float Power { get; }
+    public float Torque { get; }
+
+    // Unit conversions
+    public float SpeedMph  => SpeedMs * 2.2369363f;
+    public float LatG      => Acceleration.X / 9.80665f;
+    public float LongG     => Acceleration.Z / 9.80665f;
+    public float VertG     => Acceleration.Y / 9.80665f;
+    public float PowerHp   => Power / 745.6999f;
+    public float TorqueLbFt => Torque * 0.7375621f;
 }

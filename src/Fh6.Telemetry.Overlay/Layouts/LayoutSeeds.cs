@@ -33,6 +33,8 @@ public static class LayoutSeeds
             [WidgetId.PedalsSteer] = new(314,  6),
             [WidgetId.Boost]       = new(396,  6),
             [WidgetId.LapTiming]   = new(488,  6),
+            [WidgetId.GForce]      = new(640,  6),
+            [WidgetId.PowerTorque] = new(736,  6),
         };
 
     // CornerPanel: compact stacked block near origin (top-left corner of screen).
@@ -49,6 +51,8 @@ public static class LayoutSeeds
             [WidgetId.PedalsSteer] = new(  6, 138),
             [WidgetId.Boost]       = new( 88, 138),
             [WidgetId.LapTiming]   = new(  6, 236),
+            [WidgetId.GForce]      = new(  6, 396),
+            [WidgetId.PowerTorque] = new(102, 396),
         };
 
     // CenterDash: spread across the bottom-center of the screen.
@@ -65,5 +69,7 @@ public static class LayoutSeeds
             [WidgetId.Speed]       = new(892, 832),
             [WidgetId.LapTiming]   = new(996, 820),
             [WidgetId.Boost]       = new(700, 900, Visible: false),
+            [WidgetId.GForce]      = new(700, 980, Visible: false),
+            [WidgetId.PowerTorque] = new(800, 980, Visible: false),
         };
 }
