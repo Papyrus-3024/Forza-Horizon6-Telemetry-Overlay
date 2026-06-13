@@ -10,6 +10,16 @@ public enum OverlayLayout
     CenterDash,
 }
 
+/// <summary>
+/// A named snapshot of a complete layout configuration (layout mode, scale, widget positions).
+/// </summary>
+public sealed class SavedLayout
+{
+    public OverlayLayout BaseLayout { get; set; }
+    public double Scale { get; set; } = 1.0;
+    public Dictionary<string, WidgetConfig> Widgets { get; set; } = new();
+}
+
 public sealed class OverlayConfig
 {
     public int Port { get; set; } = 20440;
@@ -25,6 +35,11 @@ public sealed class OverlayConfig
     /// Absent keys mean "not yet customized"; <see cref="Normalize"/> fills them from the seed.
     /// </summary>
     public Dictionary<string, WidgetConfig> Widgets { get; set; } = new();
+
+    /// <summary>
+    /// User-named layout snapshots, keyed by name.
+    /// </summary>
+    public Dictionary<string, SavedLayout> SavedLayouts { get; set; } = new();
 
     /// <summary>
     /// For each of the six <see cref="WidgetId"/> keys missing from <see cref="Widgets"/>,
@@ -80,5 +95,76 @@ public sealed class OverlayConfig
             cfg.Visible = s.Visible;
             // Accent and Surface are intentionally NOT touched.
         }
+    }
+
+    // ─── Named layout management ────────────────────────────────────────────
+
+    private static WidgetConfig DeepCopyWidget(WidgetConfig src) => new()
+    {
+        Visible = src.Visible,
+        X = src.X,
+        Y = src.Y,
+        Scale = src.Scale,
+        Accent = src.Accent,
+        Surface = src.Surface,
+    };
+
+    private static Dictionary<string, WidgetConfig> DeepCopyWidgets(
+        Dictionary<string, WidgetConfig> source)
+    {
+        var copy = new Dictionary<string, WidgetConfig>(source.Count);
+        foreach (var (k, v) in source)
+            copy[k] = DeepCopyWidget(v);
+        return copy;
+    }
+
+    /// <summary>
+    /// Saves the current Layout, Scale, and Widgets as a named snapshot.
+    /// Overwrites any existing snapshot with the same name.
+    /// </summary>
+    public void SaveLayoutAs(string name)
+    {
+        SavedLayouts[name] = new SavedLayout
+        {
+            BaseLayout = Layout,
+            Scale = Scale,
+            Widgets = DeepCopyWidgets(Widgets),
+        };
+    }
+
+    /// <summary>
+    /// Restores the named snapshot into the live config.
+    /// Calls <see cref="Normalize"/> after loading so missing widget keys are filled.
+    /// Returns false (unchanged) if <paramref name="name"/> does not exist.
+    /// </summary>
+    public bool LoadLayout(string name)
+    {
+        if (!SavedLayouts.TryGetValue(name, out var saved))
+            return false;
+
+        Layout = saved.BaseLayout;
+        Scale = saved.Scale;
+        Widgets = DeepCopyWidgets(saved.Widgets);
+        Normalize(Layout);
+        return true;
+    }
+
+    /// <summary>
+    /// Removes the named snapshot. Returns false if the name did not exist.
+    /// </summary>
+    public bool DeleteLayout(string name) => SavedLayouts.Remove(name);
+
+    /// <summary>
+    /// Renames a snapshot from <paramref name="from"/> to <paramref name="to"/>.
+    /// Returns false if <paramref name="from"/> does not exist or <paramref name="to"/> equals <paramref name="from"/>.
+    /// Overwrites any existing snapshot at <paramref name="to"/>.
+    /// </summary>
+    public bool RenameLayout(string from, string to)
+    {
+        if (from == to) return false;
+        if (!SavedLayouts.TryGetValue(from, out var saved)) return false;
+        SavedLayouts.Remove(from);
+        SavedLayouts[to] = saved;
+        return true;
     }
 }

@@ -76,9 +76,17 @@ public partial class SettingsWindow : Window
             WidgetRows.Children.Add(row);
             _widgetRows.Add(new WidgetRow(visibleBox, scaleSlider, id));
         }
+
+        RefreshSavedLayoutList();
     }
 
-    private void OnApply(object sender, RoutedEventArgs e)
+    // ─── Helpers ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Writes form controls back to <see cref="_config"/> without closing the dialog.
+    /// Extracted so Save can capture in-progress edits before snapshotting.
+    /// </summary>
+    private void WriteFormToConfig()
     {
         if (int.TryParse(PortBox.Text, out var port))
             _config.Port = port;
@@ -94,8 +102,75 @@ public partial class SettingsWindow : Window
             wc.Visible = row.VisibleBox.IsChecked == true;
             wc.Scale = Math.Clamp(row.ScaleSlider.Value, 0.5, 2.5);
         }
+    }
 
+    private void RefreshSavedLayoutList()
+    {
+        var selected = SavedLayoutBox.SelectedItem as string;
+        SavedLayoutBox.ItemsSource = null;
+        SavedLayoutBox.ItemsSource = _config.SavedLayouts.Keys.ToList();
+        if (selected != null && _config.SavedLayouts.ContainsKey(selected))
+            SavedLayoutBox.SelectedItem = selected;
+    }
+
+    // ─── Apply ──────────────────────────────────────────────────────────────
+
+    private void OnApply(object sender, RoutedEventArgs e)
+    {
+        WriteFormToConfig();
         DialogResult = true;
         Close();
+    }
+
+    // ─── Named layout actions ────────────────────────────────────────────────
+
+    private void OnSaveLayout(object sender, RoutedEventArgs e)
+    {
+        var name = LayoutNameBox.Text.Trim();
+        if (string.IsNullOrEmpty(name)) return;
+
+        WriteFormToConfig();
+        _config.SaveLayoutAs(name);
+        RefreshSavedLayoutList();
+        SavedLayoutBox.SelectedItem = name;
+    }
+
+    private void OnLoadLayout(object sender, RoutedEventArgs e)
+    {
+        if (SavedLayoutBox.SelectedItem is not string name) return;
+        if (!_config.LoadLayout(name)) return;
+
+        // Reflect the loaded state in form controls.
+        LayoutBox.SelectedItem = _config.Layout;
+        HudScaleSlider.Value = _config.Scale;
+        foreach (var row in _widgetRows)
+        {
+            var wc = _config.Widgets[row.Id.ToString()];
+            row.VisibleBox.IsChecked = wc.Visible;
+            row.ScaleSlider.Value = Math.Clamp(wc.Scale, 0.5, 2.5);
+        }
+
+        // Apply and close so OverlayWindow picks up the new layout via its existing path.
+        DialogResult = true;
+        Close();
+    }
+
+    private void OnRenameLayout(object sender, RoutedEventArgs e)
+    {
+        if (SavedLayoutBox.SelectedItem is not string from) return;
+        var to = LayoutNameBox.Text.Trim();
+        if (string.IsNullOrEmpty(to)) return;
+
+        _config.RenameLayout(from, to);
+        RefreshSavedLayoutList();
+        SavedLayoutBox.SelectedItem = to;
+    }
+
+    private void OnDeleteLayout(object sender, RoutedEventArgs e)
+    {
+        if (SavedLayoutBox.SelectedItem is not string name) return;
+        _config.DeleteLayout(name);
+        RefreshSavedLayoutList();
+        LayoutNameBox.Text = string.Empty;
     }
 }
