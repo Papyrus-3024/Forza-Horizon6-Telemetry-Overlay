@@ -28,6 +28,8 @@ public partial class FreeLayout : UserControl
         InitializeComponent();
 
         // Instantiate the six widgets once.
+        var gForceWidget = new GForceWidget();
+
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
             [WidgetId.Gear]        = new GearWidget(),
@@ -36,10 +38,18 @@ public partial class FreeLayout : UserControl
             [WidgetId.PedalsSteer] = new PedalsSteerWidget(),
             [WidgetId.Boost]       = new BoostWidget(),
             [WidgetId.LapTiming]   = new LapTimingWidget(),
+            [WidgetId.GForce]      = gForceWidget,
+            [WidgetId.PowerTorque] = new PowerTorqueWidget(),
         };
 
         foreach (var w in _widgets.Values)
             Surface.Children.Add(w);
+
+        // Bind GForceWidget DependencyProperties to the ViewModel via inherited DataContext.
+        var latBinding  = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.GLat))  { Mode = System.Windows.Data.BindingMode.OneWay };
+        var longBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.GLong)) { Mode = System.Windows.Data.BindingMode.OneWay };
+        System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LatGProperty,  latBinding);
+        System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LongGProperty, longBinding);
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;

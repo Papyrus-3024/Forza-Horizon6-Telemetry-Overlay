@@ -8,4 +8,6 @@ public enum WidgetId
     PedalsSteer,
     Boost,
     LapTiming,
+    GForce,
+    PowerTorque,
 }
