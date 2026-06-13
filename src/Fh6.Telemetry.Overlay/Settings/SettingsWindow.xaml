@@ -9,7 +9,9 @@
         <TextBox x:Name="PortBox" Margin="0,2,0,10"/>
 
         <TextBlock Text="Listen address"/>
-        <TextBox x:Name="AddressBox" Margin="0,2,0,10"/>
+        <TextBox x:Name="AddressBox" Margin="0,2,0,2"/>
+        <TextBlock Text="0.0.0.0 = all interfaces (recommended). 127.0.0.1 = loopback only."
+                   FontSize="9" Foreground="#99000000" Margin="0,0,0,10" TextWrapping="Wrap"/>
 
         <TextBlock Text="Layout"/>
         <ComboBox x:Name="LayoutBox" Margin="0,2,0,10"/>
