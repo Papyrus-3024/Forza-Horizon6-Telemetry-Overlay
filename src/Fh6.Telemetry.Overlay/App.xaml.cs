@@ -1,3 +1,4 @@
+using System.Net;
 using System.Windows;
 using Fh6.Telemetry.Core;
 using Fh6.Telemetry.Overlay.Settings;
@@ -15,56 +16,73 @@ public partial class App : Application
         base.OnStartup(e);
 
         var config = ConfigStore.Load(ConfigStore.DefaultPath);
-        var args = ParseArgs(e.Args, config, out var replayFile, out var speed, out var loop);
+        ParseArgs(e.Args, config, out var replayFile, out var speed);
 
         var viewModel = new TelemetryViewModel();
         var window = new OverlayWindow(viewModel, config);
 
-        StartPump(viewModel, config, replayFile, speed, loop, window);
+        StartPump(viewModel, config, replayFile, speed, window);
 
         window.SettingsApplied += (_, _) =>
         {
             _pump?.Dispose();
-            StartPump(viewModel, config, replayFile, speed, loop, window);
+            StartPump(viewModel, config, replayFile, speed, window);
         };
 
         window.Show();
-        _ = args; // reserved
     }
 
     private void StartPump(
         TelemetryViewModel vm, OverlayConfig config,
-        string? replayFile, double speed, bool loop, OverlayWindow window)
+        string? replayFile, double speed, OverlayWindow window)
     {
-        ITelemetrySource source = replayFile is not null
-            ? new JsonlReplaySource(replayFile)
-            : new UdpTelemetrySource(config.Port);
-        var honorTiming = replayFile is not null;
-        _pump = new TelemetryPump(source, vm, window.Dispatcher, honorTiming, speed);
-        _pump.Start();
+        try
+        {
+            ITelemetrySource source;
+            if (replayFile is not null)
+            {
+                source = new JsonlReplaySource(replayFile);
+            }
+            else
+            {
+                var address = IPAddress.TryParse(config.ListenAddress, out var addr)
+                    ? addr
+                    : IPAddress.Any;
+                source = new UdpTelemetrySource(address, config.Port);
+            }
+
+            var honorTiming = replayFile is not null;
+            _pump = new TelemetryPump(source, vm, window.Dispatcher, honorTiming, speed);
+            _pump.Start();
+            vm.SetStatus("");
+        }
+        catch (Exception ex)
+        {
+            // Keep the overlay alive (e.g. UDP port in use); surface the error instead of crashing.
+            _pump = null;
+            vm.SetStatus($"Telemetry source error: {ex.Message}");
+        }
     }
 
-    private static bool ParseArgs(
+    private static void ParseArgs(
         string[] argv, OverlayConfig config,
-        out string? replayFile, out double speed, out bool loop)
+        out string? replayFile, out double speed)
     {
-        replayFile = null; speed = 1.0; loop = false;
+        replayFile = null; speed = 1.0;
         for (var i = 0; i < argv.Length; i++)
         {
             switch (argv[i])
             {
                 case "--replay" when i + 1 < argv.Length: replayFile = argv[++i]; break;
                 case "--speed" when i + 1 < argv.Length: double.TryParse(argv[++i], out speed); break;
-                case "--loop": loop = true; break;
                 case "--port" when i + 1 < argv.Length:
                     if (int.TryParse(argv[++i], out var p)) config.Port = p; break;
                 case "--opacity" when i + 1 < argv.Length:
-                    if (double.TryParse(argv[++i], out var o)) config.Opacity = o; break;
+                    if (double.TryParse(argv[++i], out var o)) config.Opacity = Math.Clamp(o, 0.2, 1.0); break;
                 case "--layout" when i + 1 < argv.Length:
                     if (Enum.TryParse<OverlayLayout>(argv[++i], true, out var lay)) config.Layout = lay; break;
             }
         }
-        return true;
     }
 
     protected override void OnExit(ExitEventArgs e)
