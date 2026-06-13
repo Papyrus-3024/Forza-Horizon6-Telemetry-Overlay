@@ -19,6 +19,14 @@ Do not leave an AI/LLM footprint in the git history or the code:
 - No AI-tell comments (e.g. "As an AI…", boilerplate explanations of obvious code, decorative emoji).
 - Match the surrounding code's style, naming, and comment density.
 
+### Git workflow
+- `main` stays green: it builds and all tests pass at every commit.
+- Do work on short-lived feature branches off `main`, named by intent
+  (`feat/parser-core`, `feat/cli-capture`, `docs/...`, `fix/...`). Don't commit features directly to `main`.
+- Small, focused commits with imperative messages; commit logically separable units separately.
+- Merge back to `main` with `--no-ff` once the unit is complete and tests pass, then delete the branch.
+- Remove temporary/throwaway features (e.g. the capture coverage tracker) on their own branch once no longer needed.
+
 ## Key facts
 - Packet: fixed **324 bytes**, **little-endian**. Documented fields occupy bytes 0–322;
   byte 323 is trailing padding (4-byte alignment). See `FH6_DATA_OUT_DOC.md`.
