@@ -12,7 +12,15 @@
             </StackPanel>
             <TextBlock Text="{Binding Rpm}" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
             <ProgressBar Height="7" Minimum="0" Maximum="1" Value="{Binding RpmFraction, Mode=OneWay}"
-                         Foreground="#5AD15A" Background="#2C3A26" BorderThickness="0"/>
+                         Background="#2C3A26" BorderThickness="0">
+                <ProgressBar.Foreground>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#5AD15A" Offset="0.0"/>
+                        <GradientStop Color="#E0C93A" Offset="0.6"/>
+                        <GradientStop Color="#E05A5A" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </ProgressBar.Foreground>
+            </ProgressBar>
         </StackPanel>
     </Border>
 </UserControl>
