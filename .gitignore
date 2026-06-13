@@ -32,3 +32,6 @@ node_modules/
 
 # Map asset (external Forza image; referenced by path, not versioned)
 /*.jpg
+
+# Large source map exports (converted to assets/maps/*.jpg via tools/convert-maps.py)
+/*.avif
