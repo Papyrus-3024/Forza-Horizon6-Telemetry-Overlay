@@ -18,6 +18,9 @@ public partial class App : Application
         var config = ConfigStore.Load(ConfigStore.DefaultPath);
         ParseArgs(e.Args, config, out var replayFile, out var speed);
 
+        // Ensure every WidgetId has a config entry (fills missing keys from the active seed).
+        config.Normalize(config.Layout);
+
         var viewModel = new TelemetryViewModel();
         var window = new OverlayWindow(viewModel, config);
 
