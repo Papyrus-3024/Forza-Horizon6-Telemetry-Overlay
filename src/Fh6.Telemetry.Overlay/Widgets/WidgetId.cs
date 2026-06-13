@@ -10,4 +10,5 @@ public enum WidgetId
     LapTiming,
     GForce,
     PowerTorque,
+    MiniMap,
 }
