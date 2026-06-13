@@ -1,0 +1,16 @@
+<Window x:Class="Fh6.Telemetry.Overlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="FH6 Overlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        Left="40" Top="40">
+    <Border x:Name="Root" Padding="6" Background="#01000000">
+        <ContentControl x:Name="LayoutHost" />
+    </Border>
+</Window>
