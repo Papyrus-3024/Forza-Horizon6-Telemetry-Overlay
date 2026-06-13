@@ -1,0 +1,18 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.LapTimingWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
+        <StackPanel>
+            <TextBlock FontFamily="Consolas" FontSize="9" Foreground="#99FFFFFF">
+                <Run Text="LAP "/><Run Text="{Binding LapNumber}"/><Run Text="  P"/><Run Text="{Binding Position}"/>
+            </TextBlock>
+            <TextBlock Text="{Binding CurrentLap}" Foreground="White" FontFamily="Consolas" FontSize="15" FontWeight="Bold"/>
+            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="#CCFFFFFF">
+                <Run Text="best "/><Run Text="{Binding BestLap}"/>
+            </TextBlock>
+            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="#99FFFFFF">
+                <Run Text="shift "/><Run Text="{Binding LastShift}"/>
+            </TextBlock>
+        </StackPanel>
+    </Border>
+</UserControl>
