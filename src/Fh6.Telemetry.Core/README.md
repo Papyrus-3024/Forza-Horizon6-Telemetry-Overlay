@@ -11,8 +11,6 @@ the CLI (and future overlays / AI work) build on, so it has no third-party depen
 - `ITelemetrySource` + `CaptureFrame` — a stream of raw frames. Implementations:
   `UdpTelemetrySource` (live) and `JsonlReplaySource` (capture file).
 - `JsonlCaptureWriter` — buffered `{t,len,b64}` JSONL writer (avoids dropping datagrams).
-- `Coverage/` — `CoverageTracker` reports which telemetry conditions a capture exercised
-  (temporary; removed once captures are validated).
 
 ## Usage
 ```csharp
