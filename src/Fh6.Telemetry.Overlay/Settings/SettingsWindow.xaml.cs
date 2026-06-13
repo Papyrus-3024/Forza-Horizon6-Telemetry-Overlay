@@ -22,6 +22,8 @@ public partial class SettingsWindow : Window
         LayoutBox.SelectedItem = config.Layout;
         OpacitySlider.Value = config.Opacity;
         HudScaleSlider.Value = config.Scale;
+        MapSeasonBox.ItemsSource = Enum.GetValues(typeof(MapSeason));
+        MapSeasonBox.SelectedItem = config.Season;
 
         // Ensure all widget keys exist before reading them.
         config.Normalize(config.Layout);
@@ -95,6 +97,8 @@ public partial class SettingsWindow : Window
             _config.Layout = layout;
         _config.Opacity = OpacitySlider.Value;
         _config.Scale = HudScaleSlider.Value;
+        if (MapSeasonBox.SelectedItem is MapSeason season)
+            _config.Season = season;
 
         foreach (var row in _widgetRows)
         {

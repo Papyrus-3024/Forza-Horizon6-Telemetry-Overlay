@@ -24,6 +24,12 @@
         <Slider x:Name="HudScaleSlider" Minimum="0.5" Maximum="2.5" TickFrequency="0.05"
                 IsSnapToTickEnabled="True" Margin="0,2,0,14"/>
 
+        <TextBlock Text="Map season"/>
+        <ComboBox x:Name="MapSeasonBox" Margin="0,2,0,4"/>
+        <TextBlock Text="Press F11 in-overlay to calibrate the map."
+                   FontSize="9" Foreground="#99000000" Margin="0,0,0,14"
+                   IsEnabled="False"/>
+
         <TextBlock Text="Widgets" Margin="0,0,0,4"/>
         <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto" Margin="0,0,0,14">
             <StackPanel x:Name="WidgetRows"/>

@@ -11,34 +11,37 @@ public class CustomizationModelTests
     // ─── Normalize ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void Normalize_empty_config_seeds_all_eight_widgets_for_BottomStrip()
+    public void Normalize_empty_config_seeds_all_widgets_for_BottomStrip()
     {
         var config = new OverlayConfig { Layout = OverlayLayout.BottomStrip };
         config.Normalize(OverlayLayout.BottomStrip);
 
-        Assert.Equal(8, config.Widgets.Count);
+        var expectedCount = Enum.GetValues<WidgetId>().Length;
+        Assert.Equal(expectedCount, config.Widgets.Count);
         foreach (WidgetId id in Enum.GetValues<WidgetId>())
             Assert.True(config.Widgets.ContainsKey(id.ToString()), $"Missing key: {id}");
     }
 
     [Fact]
-    public void Normalize_empty_config_seeds_all_eight_widgets_for_CornerPanel()
+    public void Normalize_empty_config_seeds_all_widgets_for_CornerPanel()
     {
         var config = new OverlayConfig { Layout = OverlayLayout.CornerPanel };
         config.Normalize(OverlayLayout.CornerPanel);
 
-        Assert.Equal(8, config.Widgets.Count);
+        var expectedCount = Enum.GetValues<WidgetId>().Length;
+        Assert.Equal(expectedCount, config.Widgets.Count);
         foreach (WidgetId id in Enum.GetValues<WidgetId>())
             Assert.True(config.Widgets.ContainsKey(id.ToString()), $"Missing key: {id}");
     }
 
     [Fact]
-    public void Normalize_empty_config_seeds_all_eight_widgets_for_CenterDash()
+    public void Normalize_empty_config_seeds_all_widgets_for_CenterDash()
     {
         var config = new OverlayConfig { Layout = OverlayLayout.CenterDash };
         config.Normalize(OverlayLayout.CenterDash);
 
-        Assert.Equal(8, config.Widgets.Count);
+        var expectedCount = Enum.GetValues<WidgetId>().Length;
+        Assert.Equal(expectedCount, config.Widgets.Count);
         foreach (WidgetId id in Enum.GetValues<WidgetId>())
             Assert.True(config.Widgets.ContainsKey(id.ToString()), $"Missing key: {id}");
     }
@@ -52,8 +55,8 @@ public class CustomizationModelTests
 
         config.Normalize(OverlayLayout.BottomStrip);
 
-        // All eight present
-        Assert.Equal(8, config.Widgets.Count);
+        // All widgets present
+        Assert.Equal(Enum.GetValues<WidgetId>().Length, config.Widgets.Count);
         // Custom X preserved on the pre-existing key
         Assert.Equal(customX, config.Widgets[WidgetId.Gear.ToString()].X);
         // Other keys were seeded (not null X from the seed)
@@ -83,7 +86,7 @@ public class CustomizationModelTests
     // ─── ApplySeed ──────────────────────────────────────────────────────────
 
     [Fact]
-    public void ApplySeed_overwrites_position_scale_visible_for_all_eight()
+    public void ApplySeed_overwrites_position_scale_visible_for_all_widgets()
     {
         var config = new OverlayConfig();
         var seed = LayoutSeeds.For(OverlayLayout.BottomStrip);
@@ -127,7 +130,7 @@ public class CustomizationModelTests
     [InlineData(OverlayLayout.BottomStrip)]
     [InlineData(OverlayLayout.CornerPanel)]
     [InlineData(OverlayLayout.CenterDash)]
-    public void LayoutSeeds_For_returns_all_eight_widget_ids(OverlayLayout layout)
+    public void LayoutSeeds_For_returns_all_widget_ids(OverlayLayout layout)
     {
         var seeds = LayoutSeeds.For(layout);
         foreach (WidgetId id in Enum.GetValues<WidgetId>())
