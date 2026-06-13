@@ -1,0 +1,24 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.user
+
+# Visual Studio
+.vs/
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Node (legacy capture script)
+node_modules/
+
+# Raw telemetry captures (large; not source). Trimmed test fixtures live under the test project.
+/capture-*.jsonl
