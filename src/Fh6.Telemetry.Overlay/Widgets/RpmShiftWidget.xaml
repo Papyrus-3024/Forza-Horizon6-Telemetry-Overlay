@@ -1,18 +1,33 @@
 <UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.RpmShiftWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
-        <StackPanel MinWidth="150">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
-                <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light1}"/>
-                <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light2}"/>
-                <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light3}"/>
-                <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light4}"/>
-                <Ellipse Width="9" Height="9" Margin="2,0" Fill="{Binding Light5}"/>
+    <Border Background="#C8121821"
+            BorderBrush="#26FFFFFF" BorderThickness="1"
+            CornerRadius="8" Padding="10,6">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" ShadowDepth="0" BlurRadius="10" Opacity="0.5"/>
+        </Border.Effect>
+        <StackPanel MinWidth="160">
+            <!-- Shift-light dots -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,4" HorizontalAlignment="Center">
+                <Ellipse Width="10" Height="10" Margin="3,0" Fill="{Binding Light1}"/>
+                <Ellipse Width="10" Height="10" Margin="3,0" Fill="{Binding Light2}"/>
+                <Ellipse Width="10" Height="10" Margin="3,0" Fill="{Binding Light3}"/>
+                <Ellipse Width="10" Height="10" Margin="3,0" Fill="{Binding Light4}"/>
+                <Ellipse Width="10" Height="10" Margin="3,0" Fill="{Binding Light5}"/>
             </StackPanel>
-            <TextBlock Text="{Binding Rpm}" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
-            <ProgressBar Height="7" Minimum="0" Maximum="1" Value="{Binding RpmFraction, Mode=OneWay}"
-                         Background="#2C3A26" BorderThickness="0">
+            <!-- RPM label -->
+            <TextBlock Text="RPM"
+                       Foreground="#80FFFFFF" FontSize="8" FontFamily="Consolas"
+                       Margin="0,0,0,2"/>
+            <!-- RPM value -->
+            <TextBlock Text="{Binding Rpm}"
+                       Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"
+                       Margin="0,0,0,3"/>
+            <!-- Gradient RPM bar — binds to DisplayedRpmFraction for smooth animation -->
+            <ProgressBar Height="8" Minimum="0" Maximum="1"
+                         Value="{Binding DisplayedRpmFraction, Mode=OneWay}"
+                         Background="#1A2416" BorderThickness="0">
                 <ProgressBar.Foreground>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                         <GradientStop Color="#5AD15A" Offset="0.0"/>

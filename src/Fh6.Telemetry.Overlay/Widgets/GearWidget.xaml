@@ -1,10 +1,18 @@
 <UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.GearWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:w="clr-namespace:Fh6.Telemetry.Overlay.Widgets">
+    <Border Background="#C8121821"
+            BorderBrush="#26FFFFFF" BorderThickness="1"
+            CornerRadius="8" Padding="10,6">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" ShadowDepth="0" BlurRadius="10" Opacity="0.5"/>
+        </Border.Effect>
         <StackPanel>
-            <TextBlock Text="GEAR" Foreground="#99FFFFFF" FontSize="9" FontFamily="Consolas"/>
-            <TextBlock Text="{Binding Gear}" Foreground="White" FontSize="30" FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBlock Text="GEAR"
+                       Foreground="#80FFFFFF" FontSize="8" FontFamily="Consolas"/>
+            <TextBlock Text="{Binding Gear}"
+                       Foreground="#F2F4F7" FontSize="36" FontWeight="Bold" FontFamily="Consolas"/>
         </StackPanel>
     </Border>
 </UserControl>
