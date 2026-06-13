@@ -1525,6 +1525,112 @@ git branch -d chore/retire-capture-js
 
 ---
 
+## Phase 7 — Project READMEs
+
+Branch: `docs/project-readmes`  (`git checkout -b docs/project-readmes`)
+
+### Task 17: Add a README per csproj
+
+**Files:**
+- Create: `src/Fh6.Telemetry.Core/README.md`
+- Create: `src/Fh6.Telemetry.Cli/README.md`
+- Create: `tests/Fh6.Telemetry.Tests/README.md`
+
+- [ ] **Step 1: Write the Core README**
+
+`src/Fh6.Telemetry.Core/README.md`:
+
+```markdown
+# Fh6.Telemetry.Core
+
+Reusable, UI-free library for Forza Horizon 6 "Data Out" telemetry. This is the foundation
+the CLI (and future overlays / AI work) build on, so it has no third-party dependencies.
+
+## What's here
+- `PacketParser` / `TelemetryPacket` — decode a 324-byte little-endian UDP packet (323
+  documented bytes + 1 alignment pad) into a strongly-typed struct. `SpanReader` does the
+  sequential little-endian reads.
+- `Vec3`, `Wheels`, `WheelsInt` — value types for XYZ triples and per-wheel (FL/FR/RL/RR) data.
+- `ITelemetrySource` + `CaptureFrame` — a stream of raw frames. Implementations:
+  `UdpTelemetrySource` (live) and `JsonlReplaySource` (capture file).
+- `JsonlCaptureWriter` — buffered `{t,len,b64}` JSONL writer (avoids dropping datagrams).
+- `Coverage/` — `CoverageTracker` reports which telemetry conditions a capture exercised
+  (temporary; removed once captures are validated).
+
+## Usage
+```csharp
+foreach (var frame in new JsonlReplaySource("capture.jsonl").Frames())
+    if (PacketParser.TryParse(frame.Data, out var packet))
+        Console.WriteLine(packet.Speed);
+```
+
+See `FH6_DATA_OUT_DOC.md` at the repo root for the wire format.
+```
+
+- [ ] **Step 2: Write the CLI README**
+
+`src/Fh6.Telemetry.Cli/README.md`:
+
+```markdown
+# Fh6.Telemetry.Cli
+
+The `fh6` command-line app. Holds only the user-facing layer (Spectre.Console dashboard +
+argument parsing); all telemetry logic lives in `Fh6.Telemetry.Core`.
+
+## Commands
+- `fh6 capture [-p|--port 20440] [-o|--out <file>]` — record live UDP telemetry to JSONL.
+- `fh6 replay <file> [-s|--speed N] [-l|--loop]` — replay a capture to the dashboard
+  (the main dev path; no running game required).
+- `fh6 live [-p|--port 20440]` — live dashboard from UDP.
+- `fh6 coverage <file>` — report telemetry-condition coverage of a capture (temporary).
+
+## Run
+```bash
+dotnet run --project src/Fh6.Telemetry.Cli -- replay capture-XXXX.jsonl --speed 5
+```
+
+## Dependencies
+`Fh6.Telemetry.Core`, Spectre.Console, Spectre.Console.Cli.
+```
+
+- [ ] **Step 3: Write the Tests README**
+
+`tests/Fh6.Telemetry.Tests/README.md`:
+
+```markdown
+# Fh6.Telemetry.Tests
+
+xUnit tests for `Fh6.Telemetry.Core`.
+
+## Coverage
+- `PacketParserTests` — `SpanReader` decode, golden-value parsing of real captured frames
+  (driving + menu), and length validation.
+- `JsonlTests` — JSONL replay reading and capture-writer round-trip.
+- `CoverageTrackerTests` — coverage condition evaluation and first-frame tracking.
+
+## Run
+```bash
+dotnet test
+```
+```
+
+- [ ] **Step 4: Build to confirm nothing broke**
+
+Run: `dotnet build`
+Expected: `Build succeeded.`
+
+- [ ] **Step 5: Commit and merge**
+
+```bash
+git add -A
+git commit -m "Add per-project READMEs"
+git checkout main
+git merge --no-ff docs/project-readmes -m "Document each project"
+git branch -d docs/project-readmes
+```
+
+---
+
 ## Final verification
 
 - [ ] Run the full test suite: `dotnet test`
