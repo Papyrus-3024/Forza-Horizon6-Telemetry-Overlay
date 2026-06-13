@@ -25,3 +25,7 @@ node_modules/
 
 # Visual brainstorm companion
 .superpowers/
+
+# Dropped screenshots (read, not versioned)
+/image.png
+/*.png
