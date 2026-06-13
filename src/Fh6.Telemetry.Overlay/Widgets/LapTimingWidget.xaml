@@ -1,16 +1,39 @@
 <UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.LapTimingWidget"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Background="#A6080A08" CornerRadius="6" Padding="8,4">
+    <Border Background="#C8121821"
+            BorderBrush="#26FFFFFF" BorderThickness="1"
+            CornerRadius="8" Padding="10,6">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" ShadowDepth="0" BlurRadius="10" Opacity="0.5"/>
+        </Border.Effect>
         <StackPanel>
-            <TextBlock FontFamily="Consolas" FontSize="9" Foreground="#99FFFFFF">
-                <Run Text="LAP "/><Run Text="{Binding LapNumber}"/><Run Text="  P"/><Run Text="{Binding Position}"/>
-            </TextBlock>
-            <TextBlock Text="{Binding CurrentLap}" Foreground="White" FontFamily="Consolas" FontSize="15" FontWeight="Bold"/>
-            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="#CCFFFFFF">
-                <Run Text="best "/><Run Text="{Binding BestLap}"/>
-            </TextBlock>
-            <TextBlock FontFamily="Consolas" FontSize="11" Foreground="#99FFFFFF">
+            <!-- Header: lap + position -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                <TextBlock FontFamily="Consolas" FontSize="8" Foreground="#80FFFFFF">
+                    <Run Text="LAP "/><Run Text="{Binding LapNumber}"/>
+                </TextBlock>
+                <TextBlock Text="  " FontFamily="Consolas" FontSize="8"/>
+                <Border Background="#336AA8E0" CornerRadius="3" Padding="4,1">
+                    <TextBlock FontFamily="Consolas" FontSize="8" Foreground="#99FFFFFF">
+                        <Run Text="P"/><Run Text="{Binding Position}"/>
+                    </TextBlock>
+                </Border>
+            </StackPanel>
+            <!-- Current lap time (large) -->
+            <TextBlock Text="{Binding CurrentLap}"
+                       Foreground="#F2F4F7" FontFamily="Consolas" FontSize="16" FontWeight="Bold"
+                       Margin="0,0,0,2"/>
+            <!-- Best lap -->
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="BEST "
+                           Foreground="#80FFFFFF" FontFamily="Consolas" FontSize="8"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding BestLap}"
+                           Foreground="#5AD15A" FontFamily="Consolas" FontSize="11"/>
+            </StackPanel>
+            <!-- Last shift -->
+            <TextBlock FontFamily="Consolas" FontSize="9" Foreground="#80FFFFFF" Margin="0,2,0,0">
                 <Run Text="shift "/><Run Text="{Binding LastShift}"/>
             </TextBlock>
         </StackPanel>
