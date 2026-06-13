@@ -76,12 +76,48 @@ byte source ── ITelemetrySource ──> PacketParser ──> TelemetryPacket
 - `fh6 live [--port 20440]`
   UDP listener that decodes and drives the dashboard in real time.
 
+- `fh6 coverage <file.jsonl>` — **temporary** (see "Capture coverage tracker" below)
+  Reads a capture and reports which telemetry conditions were exercised vs still missing,
+  so manual test captures can be confirmed complete. Removed once captures are validated.
+
 ### Dashboard content (v1)
 
 Refreshing layout showing: race state, speed (m/s + km/h), gear, engine RPM (with
 idle/max context), throttle/brake/clutch/handbrake inputs, steering, per-wheel tire slip
 and temperature, boost, fuel, and lap/position info. Exact layout finalized during
 implementation; the renderer is swappable behind `IDashboard`.
+
+## Capture coverage tracker (temporary)
+
+A throwaway aid for manual testing: it confirms that a new in-game capture actually
+exercised every family of packet fields, so the team knows the captures are good before
+relying on them. **Built last** (after Core, capture, replay, dashboard) and **removed**
+once captures are confirmed — its removal is a tracked step.
+
+`fh6 coverage <file.jsonl>` parses every frame, evaluates each condition below, and prints
+a checklist of met / missing items (with a simple count or first-seen frame for met
+items). Thresholds are approximate and tuned during implementation.
+
+Conditions to track (chosen so each maps to a distinct field family):
+
+- Race state: `IsRaceOn` observed both 1 and 0 (driving vs menu transition).
+- Inputs: full throttle (`Accel` ≈ 255), hard brake (`Brake` ≈ 255), clutch used
+  (`Clutch` > 0), handbrake used (`HandBrake` > 0), full steer left and right (`Steer` ≈ ±127).
+- Drivetrain: each forward gear reached (1..max observed), reverse, neutral; RPM near
+  redline (`CurrentEngineRpm` close to `EngineMaxRpm`).
+- Grip/tires: high slip ratio (`|TireSlipRatio|` > 1), high slip angle
+  (`|TireSlipAngle|` > 1), high combined slip (> 1), tire temperature variation.
+- Surface: wheel on rumble strip (any `WheelOnRumbleStrip` = 1), wheel in puddle (any
+  `WheelInPuddle` = 1, needs wet conditions), high `SurfaceRumble` (off-road/rough).
+- Suspension/airborne: near-full compression (landing) and near-full stretch on all four
+  wheels (airborne / jump).
+- Powertrain: positive `Boost` (turbo/SC car), non-trivial `Power`/`Torque` range.
+- Collisions: smashable hit (`SmashableVelDiff` > 0 / `SmashableMass` > 0).
+- Race/lap: lap completed (`LapNumber` increments; `BestLap`/`LastLap` populated),
+  `RacePosition` recorded, high `Speed` reached, `DistanceTraveled` accumulates.
+
+Some conditions require a chosen environment (puddle needs rain; collision needs hitting an
+object; airborne needs a jump). The tracker only reports; the driver decides what to cover.
 
 ## Error handling
 
