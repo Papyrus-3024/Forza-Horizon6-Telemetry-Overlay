@@ -8,7 +8,11 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="False"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <Border x:Name="Root" Background="#01000000"
             MouseEnter="Root_MouseEnter" MouseLeave="Root_MouseLeave">
         <Grid>

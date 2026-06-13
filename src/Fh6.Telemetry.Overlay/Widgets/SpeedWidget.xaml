@@ -4,9 +4,6 @@
     <Border Background="#C8121821"
             BorderBrush="#26FFFFFF" BorderThickness="1"
             CornerRadius="8" Padding="10,6">
-        <Border.Effect>
-            <DropShadowEffect Color="#000000" ShadowDepth="0" BlurRadius="10" Opacity="0.5"/>
-        </Border.Effect>
         <StackPanel>
             <TextBlock Text="MPH"
                        Foreground="#80FFFFFF" FontSize="8" FontFamily="Consolas"/>
