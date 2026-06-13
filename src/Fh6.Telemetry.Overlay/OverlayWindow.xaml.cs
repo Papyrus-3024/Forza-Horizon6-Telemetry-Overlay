@@ -1,11 +1,11 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Fh6.Telemetry.Overlay.Interop;
 using Fh6.Telemetry.Overlay.Layouts;
 using Fh6.Telemetry.Overlay.Settings;
 using Fh6.Telemetry.Overlay.ViewModels;
+using Fh6.Telemetry.Overlay.Widgets;
 
 namespace Fh6.Telemetry.Overlay;
 
@@ -31,15 +31,27 @@ public partial class OverlayWindow : Window
         DataContext = viewModel;
 
         Opacity = Math.Clamp(config.Opacity, 0.2, 1.0);
-        if (config.WindowLeft is double l) Left = l;
-        if (config.WindowTop is double t) Top = t;
 
-        var scale = Math.Clamp(config.Scale, 0.5, 3.0);
-        LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(scale, scale);
+        // Cover the primary screen working area — drop SizeToContent.
+        var workArea = SystemParameters.WorkArea;
+        Left   = workArea.Left;
+        Top    = workArea.Top;
+        Width  = workArea.Width;
+        Height = workArea.Height;
 
-        ApplyLayout(config.Layout);
+        // Wire up the FreeLayout.
+        FreeLayoutHost.SetViewModel(viewModel);
+        FreeLayoutHost.ApplyConfig(config);
+
         SourceInitialized += OnSourceInitialized;
-        MouseLeftButtonDown += (_, _) => { if (_editMode) DragMove(); };
+
+        // Whole-window DragMove fallback: fires when the mouse-down is on empty canvas,
+        // i.e. when FreeLayout did NOT capture the mouse (no widget was hit in edit mode).
+        MouseLeftButtonDown += (_, e) =>
+        {
+            if (_editMode && !FreeLayoutHost.IsMouseCaptureWithin)
+                DragMove();
+        };
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
@@ -59,16 +71,20 @@ public partial class OverlayWindow : Window
     {
         _editMode = !_editMode;
         ClickThrough.SetClickThrough(_hwnd, !_editMode);
+
         Root.BorderBrush = _editMode
             ? System.Windows.Media.Brushes.Yellow
             : System.Windows.Media.Brushes.Transparent;
         Root.BorderThickness = new Thickness(_editMode ? 2 : 0);
-        ResizeGrip.Visibility = _editMode ? Visibility.Visible : Visibility.Collapsed;
+
+        FreeLayoutHost.SetEditMode(_editMode, _config);
 
         if (!_editMode)
         {
+            // Flush widget positions and save.
+            FreeLayoutHost.FlushPositions(_config);
             _config.WindowLeft = Left;
-            _config.WindowTop = Top;
+            _config.WindowTop  = Top;
             ConfigStore.Save(ConfigStore.DefaultPath, _config);
         }
     }
@@ -87,9 +103,8 @@ public partial class OverlayWindow : Window
                 if (dialog.ShowDialog() == true)
                 {
                     Opacity = Math.Clamp(_config.Opacity, 0.2, 1.0);
-                    ApplyLayout(_config.Layout);
-                    var s = Math.Clamp(_config.Scale, 0.5, 3.0);
-                    LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(s, s);
+                    _config.Normalize(_config.Layout);
+                    FreeLayoutHost.ApplyConfig(_config);
                     ConfigStore.Save(ConfigStore.DefaultPath, _config);
                     SettingsApplied?.Invoke(this, EventArgs.Empty);
                 }
@@ -109,37 +124,19 @@ public partial class OverlayWindow : Window
             OverlayLayout.CornerPanel => OverlayLayout.CenterDash,
             _ => OverlayLayout.BottomStrip,
         };
-        ApplyLayout(_config.Layout);
+        _config.ApplySeed(LayoutSeeds.For(_config.Layout));
+        FreeLayoutHost.ApplyConfig(_config);
         ConfigStore.Save(ConfigStore.DefaultPath, _config);
     }
 
-    private void ApplyLayout(OverlayLayout layout)
-    {
-        Control view = layout switch
-        {
-            OverlayLayout.CornerPanel => new CornerPanelLayout(),
-            OverlayLayout.CenterDash => new CenterDashLayout(),
-            _ => new BottomStripLayout(),
-        };
-        view.DataContext = _viewModel;
-        LayoutHost.Content = view;
-    }
-
-    private void Root_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    private void Root_MouseEnter(object sender, MouseEventArgs e)
         => QuitButton.Opacity = 1;
 
-    private void Root_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    private void Root_MouseLeave(object sender, MouseEventArgs e)
         => QuitButton.Opacity = 0;
 
     private void QuitButton_Click(object sender, RoutedEventArgs e)
         => Application.Current.Shutdown();
-
-    private void ResizeGrip_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
-    {
-        var s = Math.Clamp(_config.Scale + e.VerticalChange / 200.0, 0.5, 3.0);
-        _config.Scale = s;
-        LayoutHost.LayoutTransform = new System.Windows.Media.ScaleTransform(s, s);
-    }
 
     /// <summary>Raised after settings change so the host can restart the source if port/address changed.</summary>
     public event EventHandler? SettingsApplied;
