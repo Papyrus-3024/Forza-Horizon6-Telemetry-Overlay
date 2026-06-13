@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Fh6.Telemetry.Tests" />
+  </ItemGroup>
+
 </Project>
