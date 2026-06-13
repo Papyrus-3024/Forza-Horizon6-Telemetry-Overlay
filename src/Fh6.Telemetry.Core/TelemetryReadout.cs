@@ -65,7 +65,6 @@ public readonly struct TelemetryReadout
     public float SpeedMph  => SpeedMs * 2.2369363f;
     public float LatG      => Acceleration.X / 9.80665f;
     public float LongG     => Acceleration.Z / 9.80665f;
-    public float VertG     => Acceleration.Y / 9.80665f;
     public float PowerHp   => Power / 745.6999f;
     public float TorqueLbFt => Torque * 0.7375621f;
 }

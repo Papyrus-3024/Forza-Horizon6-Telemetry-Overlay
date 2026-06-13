@@ -62,4 +62,43 @@ public class TelemetryReadoutTests
     {
         Assert.Equal(expected, LapTime.Format(seconds));
     }
+
+    [Fact]
+    public void SpeedMph_converts_from_driving_frame()
+    {
+        // Real frame Speed = 10.3697 m/s → 10.3697 * 2.2369363 ≈ 23.2 mph
+        var r = DrivingReadout();
+        Assert.Equal(23.2, r.SpeedMph, 1);
+    }
+
+    [Fact]
+    public void LatG_and_LongG_from_synthetic_packet()
+    {
+        // Acceleration X=9.80665 → LatG=1.0; Z=19.6133 → LongG=2.0
+        var packet = new TelemetryPacket
+        {
+            Acceleration = new Vec3(9.80665f, 0f, 19.6133f),
+        };
+        var r = new TelemetryReadout(packet);
+        Assert.Equal(1.0, r.LatG, 2);
+        Assert.Equal(2.0, r.LongG, 2);
+    }
+
+    [Fact]
+    public void PowerHp_converts_watts_to_horsepower()
+    {
+        // 745699.9 W / 745.6999 ≈ 1000 hp
+        var packet = new TelemetryPacket { Power = 745699.9f };
+        var r = new TelemetryReadout(packet);
+        Assert.Equal(1000, r.PowerHp, 0);
+    }
+
+    [Fact]
+    public void TorqueLbFt_converts_newton_metres_to_pound_feet()
+    {
+        // 1 N·m * 0.7375621 ≈ 0.738 lb·ft
+        var packet = new TelemetryPacket { Torque = 1f };
+        var r = new TelemetryReadout(packet);
+        Assert.Equal(0.7376, r.TorqueLbFt, 3);
+    }
 }
