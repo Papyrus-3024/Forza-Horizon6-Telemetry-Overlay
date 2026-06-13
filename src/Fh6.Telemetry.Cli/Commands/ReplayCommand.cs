@@ -32,6 +32,7 @@ public sealed class ReplayCommand : Command<ReplayCommand.Settings>
             do
             {
                 double? prevT = null;
+                var rendered = 0;
                 foreach (var frame in source.Frames())
                 {
                     if (prevT is double previous && settings.Speed > 0)
@@ -43,8 +44,15 @@ public sealed class ReplayCommand : Command<ReplayCommand.Settings>
                     prevT = frame.TimestampMs;
 
                     if (PacketParser.TryParse(frame.Data, out var packet))
+                    {
                         render(packet);
+                        rendered++;
+                    }
                 }
+
+                // Nothing to play (empty or all-unparseable capture); don't spin on --loop.
+                if (rendered == 0)
+                    break;
             } while (settings.Loop);
         });
 

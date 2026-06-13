@@ -32,7 +32,7 @@ public sealed class CaptureCommand : Command<CaptureCommand.Settings>
             source.Dispose(); // unblocks Receive(), ends the loop
         };
 
-        AnsiConsole.MarkupLine($"[green]Listening on UDP :{settings.Port}[/] -> {outPath}  (Ctrl-C to stop)");
+        AnsiConsole.MarkupLine($"[green]Listening on UDP :{settings.Port}[/] -> {Markup.Escape(outPath)}  (Ctrl-C to stop)");
 
         long count = 0;
         foreach (var frame in source.Frames())
@@ -44,7 +44,7 @@ public sealed class CaptureCommand : Command<CaptureCommand.Settings>
         }
 
         writer.Flush();
-        AnsiConsole.MarkupLine($"\n[green]Saved {count} packets to {outPath}[/]");
+        AnsiConsole.MarkupLine($"\n[green]Saved {count} packets to {Markup.Escape(outPath)}[/]");
         return 0;
     }
 }
