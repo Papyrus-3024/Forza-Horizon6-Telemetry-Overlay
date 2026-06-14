@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -31,6 +32,8 @@ public partial class OverlayWindow : Window
     private bool _settingsPinned;
     private bool _settingsPeeking;
     private DispatcherTimer? _cursorPoll;
+    private bool _flyoutDragging;
+    private Point _flyoutDragOffset;
 
     // Animation tick — driven by CompositionTarget.Rendering
     private readonly Stopwatch _renderClock = new();
@@ -60,6 +63,10 @@ public partial class OverlayWindow : Window
         Settings.Load(config);
         Settings.ApplyRequested += (_, _) => ApplyFromFlyout();
         Settings.CloseRequested += (_, _) => SetSettingsPinned(false);
+        // Drag the flyout by its header to reposition it (persisted in config).
+        Settings.DragHandle.MouseLeftButtonDown += FlyoutDragStart;
+        Settings.DragHandle.MouseMove          += FlyoutDragMove;
+        Settings.DragHandle.MouseLeftButtonUp  += FlyoutDragEnd;
 
         SourceInitialized += OnSourceInitialized;
 
@@ -155,6 +162,7 @@ public partial class OverlayWindow : Window
     {
         if (_settingsPeeking == peeking || _settingsPinned) return;
         _settingsPeeking = peeking;
+        if (peeking) PositionFlyout();
         Settings.Visibility = peeking ? Visibility.Visible : Visibility.Collapsed;
         UpdateClickThrough();
     }
@@ -163,8 +171,61 @@ public partial class OverlayWindow : Window
     {
         _settingsPinned = pinned;
         _settingsPeeking = false;
+        if (pinned) PositionFlyout();
         Settings.Visibility = pinned ? Visibility.Visible : Visibility.Collapsed;
         UpdateClickThrough();
+    }
+
+    /// <summary>Places the flyout at its saved position, or the default top-right under the gear.</summary>
+    private void PositionFlyout()
+    {
+        Settings.UpdateLayout();
+        double w = Settings.ActualWidth > 0 ? Settings.ActualWidth : Settings.Width;
+        double x = _config.FlyoutX ?? (ChromeCanvas.ActualWidth - w - 8);
+        double y = _config.FlyoutY ?? 34;
+        ClampFlyout(ref x, ref y, w);
+        Canvas.SetLeft(Settings, x);
+        Canvas.SetTop(Settings, y);
+    }
+
+    private void ClampFlyout(ref double x, ref double y, double w)
+    {
+        double maxX = Math.Max(0, ChromeCanvas.ActualWidth - w);
+        double h = Settings.ActualHeight > 0 ? Settings.ActualHeight : 200;
+        double maxY = Math.Max(0, ChromeCanvas.ActualHeight - h);
+        x = Math.Clamp(x, 0, maxX);
+        y = Math.Clamp(y, 0, maxY);
+    }
+
+    private void FlyoutDragStart(object sender, MouseButtonEventArgs e)
+    {
+        var pos = e.GetPosition(ChromeCanvas);
+        double left = Canvas.GetLeft(Settings); if (double.IsNaN(left)) left = 0;
+        double top  = Canvas.GetTop(Settings);  if (double.IsNaN(top))  top  = 0;
+        _flyoutDragOffset = new Point(pos.X - left, pos.Y - top);
+        _flyoutDragging = true;
+        Settings.DragHandle.CaptureMouse();
+    }
+
+    private void FlyoutDragMove(object sender, MouseEventArgs e)
+    {
+        if (!_flyoutDragging) return;
+        var pos = e.GetPosition(ChromeCanvas);
+        double x = pos.X - _flyoutDragOffset.X;
+        double y = pos.Y - _flyoutDragOffset.Y;
+        ClampFlyout(ref x, ref y, Settings.ActualWidth);
+        Canvas.SetLeft(Settings, x);
+        Canvas.SetTop(Settings, y);
+    }
+
+    private void FlyoutDragEnd(object sender, MouseButtonEventArgs e)
+    {
+        if (!_flyoutDragging) return;
+        _flyoutDragging = false;
+        Settings.DragHandle.ReleaseMouseCapture();
+        _config.FlyoutX = Canvas.GetLeft(Settings);
+        _config.FlyoutY = Canvas.GetTop(Settings);
+        ConfigStore.Save(ConfigStore.DefaultPath, _config);
     }
 
     private void GearButton_Click(object sender, RoutedEventArgs e)

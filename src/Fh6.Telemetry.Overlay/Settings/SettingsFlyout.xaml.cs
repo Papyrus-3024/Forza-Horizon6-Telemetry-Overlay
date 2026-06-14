@@ -1,7 +1,13 @@
+using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using Fh6.Telemetry.Core;
 using Fh6.Telemetry.Overlay.Theming;
+using Fh6.Telemetry.Overlay.ViewModels;
 using Fh6.Telemetry.Overlay.Widgets;
+using Microsoft.Win32;
 
 namespace Fh6.Telemetry.Overlay.Settings;
 
@@ -26,7 +32,43 @@ public partial class SettingsFlyout : UserControl
     /// <summary>Raised when the user dismisses the panel.</summary>
     public event EventHandler? CloseRequested;
 
-    public SettingsFlyout() => InitializeComponent();
+    private static readonly Brush LabelBrush = new SolidColorBrush(Color.FromRgb(0xE8, 0xED, 0xF2));
+
+    public SettingsFlyout()
+    {
+        InitializeComponent();
+        // Health readout tracks the VM's live diagnostics (inherited DataContext).
+        DataContextChanged += (_, _) => HookViewModel();
+        Loaded += (_, _) => { HookViewModel(); UpdateHealth(); };
+    }
+
+    private TelemetryViewModel? _vm;
+
+    private void HookViewModel()
+    {
+        if (ReferenceEquals(_vm, DataContext)) return;
+        if (_vm is not null) _vm.PropertyChanged -= OnVmPropertyChanged;
+        _vm = DataContext as TelemetryViewModel;
+        if (_vm is not null) _vm.PropertyChanged += OnVmPropertyChanged;
+        UpdateHealth();
+    }
+
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TelemetryViewModel.Diagnostics)) UpdateHealth();
+    }
+
+    private void UpdateHealth()
+    {
+        if (HealthState is null) return;
+        var diag = _vm?.Diagnostics ?? "";
+        bool noData = diag.Length == 0 || diag.StartsWith("waiting", StringComparison.OrdinalIgnoreCase)
+                                       || diag.StartsWith("0 ", StringComparison.Ordinal);
+        HealthState.Text = noData ? "● No data" : "● Receiving";
+        HealthState.Foreground = new SolidColorBrush(noData
+            ? Color.FromRgb(0xE0, 0x5A, 0x5A)
+            : Color.FromRgb(0x5A, 0xD1, 0x5A));
+    }
 
     /// <summary>Populates the controls from <paramref name="config"/>. Call once after construction.</summary>
     public void Load(OverlayConfig config)
@@ -55,7 +97,7 @@ public partial class SettingsFlyout : UserControl
         {
             var wc = _config.Widgets[id.ToString()];
 
-            var nameBlock = new TextBlock { Text = id.ToString(), Width = 110, VerticalAlignment = VerticalAlignment.Center };
+            var nameBlock = new TextBlock { Text = id.ToString(), Width = 110, Foreground = LabelBrush, VerticalAlignment = VerticalAlignment.Center };
             var visibleBox = new CheckBox { IsChecked = wc.Visible, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
             var scaleSlider = new Slider
             {
@@ -188,5 +230,56 @@ public partial class SettingsFlyout : UserControl
         _config.DeleteLayout(name);
         RefreshSavedLayoutList();
         LayoutNameBox.Text = string.Empty;
+    }
+
+    // ─── Health tab ─────────────────────────────────────────────────────────────
+
+    private void OnCopyLoopback(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Clipboard.SetText(LoopbackCmd.Text);
+            CopyHint.Text = "copied";
+        }
+        catch
+        {
+            CopyHint.Text = "copy failed";
+        }
+    }
+
+    // ─── Export tab ─────────────────────────────────────────────────────────────
+
+    private void OnBrowseCapture(object sender, RoutedEventArgs e)
+    {
+        var dlg = new OpenFileDialog
+        {
+            Filter = "Capture files (*.jsonl)|*.jsonl|All files (*.*)|*.*",
+            Title = "Choose a capture to export",
+        };
+        if (dlg.ShowDialog() == true)
+            CapturePathBox.Text = dlg.FileName;
+    }
+
+    private void OnExportCsv(object sender, RoutedEventArgs e)
+    {
+        var path = CapturePathBox.Text.Trim();
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+        {
+            ExportResult.Text = "Pick an existing .jsonl capture first.";
+            return;
+        }
+
+        try
+        {
+            var outPath = Path.ChangeExtension(path, ".csv");
+            int rows;
+            using (var writer = new StreamWriter(outPath, append: false))
+                rows = CsvExporter.Export(new JsonlReplaySource(path).Frames(), writer);
+            ExportResult.Text = $"Exported {rows} rows → {Path.GetFileName(outPath)}";
+        }
+        catch (Exception ex)
+        {
+            ExportResult.Text = $"Export failed: {ex.Message}";
+        }
     }
 }

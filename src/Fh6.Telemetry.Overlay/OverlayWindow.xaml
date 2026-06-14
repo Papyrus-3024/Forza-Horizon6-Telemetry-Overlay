@@ -90,10 +90,11 @@
                 <TextBlock Text="⚙" FontSize="15" Foreground="White"/>
             </Button>
 
-            <!-- In-overlay settings flyout (hidden until peeked/pinned). -->
-            <settings:SettingsFlyout x:Name="Settings"
-                                     HorizontalAlignment="Right" VerticalAlignment="Top"
-                                     Margin="0,34,6,0" Visibility="Collapsed"/>
+            <!-- In-overlay settings flyout (hidden until peeked/pinned). Positioned on a Canvas
+                 so it can be dragged by its header and remember where the user put it. -->
+            <Canvas x:Name="ChromeCanvas" IsHitTestVisible="True" Background="{x:Null}">
+                <settings:SettingsFlyout x:Name="Settings" Visibility="Collapsed"/>
+            </Canvas>
         </Grid>
     </Border>
 </Window>
