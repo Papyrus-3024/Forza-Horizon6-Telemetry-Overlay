@@ -50,3 +50,13 @@ Do not leave an AI/LLM footprint in the git history or the code:
   headless, launch the exe and capture the screen via PowerShell `System.Drawing.CopyFromScreen`.
 - Text under an `Effect` (e.g. DropShadowEffect) loses ClearType and looks blurry — keep
   effects off text; the window sets `TextFormattingMode=Display`.
+- **For card drop-shadows, use a layered Border, never an `Effect` on the card itself.**
+  An `Effect` anywhere up the tree forces the whole subtree (including text) into an
+  intermediate render → grayscale AA. So each widget card is a `Grid` of two borders: a
+  back `Border` carrying the `Fh6.Surface` fill + rim + `{StaticResource Fh6.PanelShadow}`
+  (no children), and a transparent front `Border` holding the content. Glows go on shapes
+  (arcs, bars, the G-dot) only — never on a border that wraps text.
+- Theme brushes are written to `Application.Resources` by `ThemeApplier` (keys
+  `Fh6.Accent/Surface/Border/TextPrimary/TextSecondary/TextLabel/Good/Warn/Danger`). A
+  `{DynamicResource Fh6.X}` whose key isn't set silently falls back (e.g. black text), so
+  any new key must be added to both `ThemeApplier` and every `ThemePalette` preset.
