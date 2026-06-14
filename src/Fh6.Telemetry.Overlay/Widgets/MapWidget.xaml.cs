@@ -4,25 +4,33 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Fh6.Telemetry.Core;
+using Fh6.Telemetry.Overlay.Settings;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
 
 public partial class MapWidget : UserControl
 {
-    // ── DependencyProperties ────────────────────────────────────────────────
+    // ── Reference projection parameters (20 000 px map) ─────────────────────
+    // Published FH6 world→pixel affine for a 20 000 px square reference map.
+    // Scaled to the actual image width in Configure; nudged by MapScale/Offset.
+    private const double RefA =  0.652837;
+    private const double RefB =  0.000763;
+    private const double RefC =  10387.027;
+    private const double RefD = -0.003754;
+    private const double RefE = -0.657135;
+    private const double RefF =  9846.097;
+    private const double RefMapSize = 20000.0;
+
+    // ── DependencyProperties ─────────────────────────────────────────────────
 
     public static readonly DependencyProperty WorldXProperty =
         DependencyProperty.Register(
-            nameof(WorldX),
-            typeof(double),
-            typeof(MapWidget),
+            nameof(WorldX), typeof(double), typeof(MapWidget),
             new PropertyMetadata(0.0, OnWorldCoordChanged));
 
     public static readonly DependencyProperty WorldZProperty =
         DependencyProperty.Register(
-            nameof(WorldZ),
-            typeof(double),
-            typeof(MapWidget),
+            nameof(WorldZ), typeof(double), typeof(MapWidget),
             new PropertyMetadata(0.0, OnWorldCoordChanged));
 
     public double WorldX
@@ -37,116 +45,120 @@ public partial class MapWidget : UserControl
         set => SetValue(WorldZProperty, value);
     }
 
-    // ── Private state ───────────────────────────────────────────────────────
+    // ── Private state ────────────────────────────────────────────────────────
 
-    private BitmapImage? _bitmap;   // null when image failed to load or no path
-    private MapCalibration? _cal;
+    private BitmapImage? _bitmap;
+    private MapCalibration? _effectiveCal;   // affine scaled+nudged for this image
+    private double _zoom = 4.0;              // display px per source px
 
-    // ── Constructor ─────────────────────────────────────────────────────────
+    // ── Constructor ──────────────────────────────────────────────────────────
 
     public MapWidget() => InitializeComponent();
 
-    // ── Public API ──────────────────────────────────────────────────────────
+    // ── Public API ───────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Loads (or reloads) the map image and stores the calibration.
-    /// Safe to call with a null or missing path: the widget degrades gracefully.
+    /// Loads (or reloads) the map image and derives the effective transform from cfg.
+    /// Safe to call with a null or missing path; degrades to a placeholder.
     /// </summary>
-    public void Configure(string? imagePath, MapCalibration? cal)
+    public void Configure(string? imagePath, OverlayConfig cfg)
     {
-        _cal = cal;
+        _zoom   = Math.Clamp(cfg.MapZoom, 1.0, 16.0);
         _bitmap = TryLoadBitmap(imagePath);
 
         if (_bitmap is not null)
         {
             MapImage.Source = _bitmap;
-
-            // Show calibration hint when image loaded but cal is absent.
-            if (_cal is null)
-                ShowPlaceholder("Map not calibrated\nPress F11 to calibrate");
-            else
-                HidePlaceholder();
+            // Derive effective calibration scaled to the loaded image's pixel width,
+            // then apply user nudges. This assumes our seasonal images share the
+            // reference projection; the nudge (scale/offset) lets the user align by eye
+            // if the terrain under the marker drifts.
+            _effectiveCal = BuildEffectiveCalibration(_bitmap.PixelWidth, cfg);
+            HidePlaceholder();
         }
         else
         {
             MapImage.Source = null;
+            _effectiveCal = null;
             ShowPlaceholder("No map image");
         }
 
-        UpdateMarker();
+        UpdateView();
     }
 
-    // ── Event handlers ──────────────────────────────────────────────────────
+    // ── Event handlers ───────────────────────────────────────────────────────
 
     private static void OnWorldCoordChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        => ((MapWidget)d).UpdateMarker();
+        => ((MapWidget)d).UpdateView();
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
-        => UpdateMarker();
+        => UpdateView();
 
-    // ── Marker positioning ──────────────────────────────────────────────────
+    // ── Car-centred view update ──────────────────────────────────────────────
 
-    private void UpdateMarker()
+    private void UpdateView()
     {
-        if (_bitmap is null || _cal is null)
+        if (_bitmap is null || _effectiveCal is null)
         {
             Marker.Visibility = Visibility.Collapsed;
             return;
         }
 
-        // Source image dimensions — never assume a fixed size.
-        double srcW = _bitmap.PixelWidth;
-        double srcH = _bitmap.PixelHeight;
-        if (srcW <= 0 || srcH <= 0)
+        double viewW = Viewport.ActualWidth;
+        double viewH = Viewport.ActualHeight;
+        if (viewW <= 0 || viewH <= 0)
         {
             Marker.Visibility = Visibility.Collapsed;
             return;
         }
 
-        // Available canvas size (the Overlay Canvas fills the Grid cell).
-        double canvasW = Overlay.ActualWidth;
-        double canvasH = Overlay.ActualHeight;
-        if (canvasW <= 0 || canvasH <= 0)
+        var (srcX, srcY) = WorldToMap.ToPixel(WorldX, WorldZ, _effectiveCal);
+        if (double.IsNaN(srcX) || double.IsNaN(srcY) ||
+            double.IsInfinity(srcX) || double.IsInfinity(srcY))
         {
             Marker.Visibility = Visibility.Collapsed;
             return;
         }
 
-        // Convert world coords to source-image pixel coords.
-        var (pixX, pixY) = WorldToMap.ToPixel(WorldX, WorldZ, _cal);
-        if (double.IsNaN(pixX) || double.IsNaN(pixY) ||
-            double.IsInfinity(pixX) || double.IsInfinity(pixY))
-        {
-            Marker.Visibility = Visibility.Collapsed;
-            return;
-        }
+        // Scale the source image by zoom, then translate so the car pixel lands at viewport centre.
+        // The marker Ellipse is centred in the Grid via HorizontalAlignment/VerticalAlignment=Center.
+        MapScale.ScaleX = _zoom;
+        MapScale.ScaleY = _zoom;
+        MapTranslate.X  = viewW / 2.0 - srcX * _zoom;
+        MapTranslate.Y  = viewH / 2.0 - srcY * _zoom;
 
-        // Scale source-image pixel to displayed canvas coords.
-        // Image.Stretch=Uniform: the image is letter-boxed to fit within the canvas.
-        // Compute the actual rendered rect of the image inside the canvas.
-        double scaleX = canvasW / srcW;
-        double scaleY = canvasH / srcH;
-        double scale  = Math.Min(scaleX, scaleY);   // Uniform uses the smaller scale
-
-        double renderedW = srcW * scale;
-        double renderedH = srcH * scale;
-        double offsetX   = (canvasW - renderedW) / 2.0;  // letter-box padding
-        double offsetY   = (canvasH - renderedH) / 2.0;
-
-        double displayX = offsetX + pixX * scale;
-        double displayY = offsetY + pixY * scale;
-
-        // Clamp to the rendered image rect so the dot never leaves the map.
-        displayX = Math.Clamp(displayX, offsetX, offsetX + renderedW);
-        displayY = Math.Clamp(displayY, offsetY, offsetY + renderedH);
-
-        double half = Marker.Width / 2.0;
-        Canvas.SetLeft(Marker, displayX - half);
-        Canvas.SetTop(Marker,  displayY - half);
         Marker.Visibility = Visibility.Visible;
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────────────
+    // ── Default calibration construction ─────────────────────────────────────
+
+    private static MapCalibration BuildEffectiveCalibration(int imagePixelWidth, OverlayConfig cfg)
+    {
+        // Scale reference params to match the loaded image's actual pixel width.
+        double f = imagePixelWidth / RefMapSize;
+
+        double a = RefA * f;
+        double b = RefB * f;
+        double c = RefC * f;
+        double d = RefD * f;
+        double e = RefE * f;
+        double fParam = RefF * f;
+
+        // Apply user nudges: MapScale scales the rotation/scale components (A,B,D,E);
+        // MapOffsetX/Y shift the translation constants.
+        double s = cfg.MapScale;
+        return new MapCalibration
+        {
+            A = a * s,
+            B = b * s,
+            C = c + cfg.MapOffsetX,
+            D = d * s,
+            E = e * s,
+            F = fParam + cfg.MapOffsetY,
+        };
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static BitmapImage? TryLoadBitmap(string? path)
     {
@@ -158,9 +170,9 @@ public partial class MapWidget : UserControl
 
             var bmp = new BitmapImage();
             bmp.BeginInit();
-            bmp.UriSource           = new Uri(path, UriKind.Absolute);
-            bmp.CacheOption         = BitmapCacheOption.OnLoad;
-            bmp.CreateOptions       = BitmapCreateOptions.IgnoreImageCache;
+            bmp.UriSource     = new Uri(path, UriKind.Absolute);
+            bmp.CacheOption   = BitmapCacheOption.OnLoad;
+            bmp.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
             bmp.EndInit();
             bmp.Freeze();
             return bmp;

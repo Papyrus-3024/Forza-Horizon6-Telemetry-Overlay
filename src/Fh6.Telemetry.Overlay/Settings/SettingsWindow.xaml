@@ -25,10 +25,22 @@
                 IsSnapToTickEnabled="True" Margin="0,2,0,14"/>
 
         <TextBlock Text="Map season"/>
-        <ComboBox x:Name="MapSeasonBox" Margin="0,2,0,4"/>
-        <TextBlock Text="Press F11 in-overlay to calibrate the map."
-                   FontSize="9" Foreground="#99000000" Margin="0,0,0,14"
-                   IsEnabled="False"/>
+        <ComboBox x:Name="MapSeasonBox" Margin="0,2,0,10"/>
+
+        <TextBlock Text="Map zoom" Margin="0,0,0,2"/>
+        <Slider x:Name="MapZoomSlider" Minimum="1" Maximum="16" TickFrequency="0.5"
+                IsSnapToTickEnabled="True" Margin="0,2,0,4"/>
+        <TextBlock Text="Alignment nudge" Margin="0,0,0,2"/>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+            <TextBlock Text="Scale" Width="38" VerticalAlignment="Center"/>
+            <TextBox x:Name="MapScaleBox" Width="60" Margin="0,0,10,0"/>
+            <TextBlock Text="OffsetX" Width="48" VerticalAlignment="Center"/>
+            <TextBox x:Name="MapOffsetXBox" Width="60" Margin="0,0,10,0"/>
+            <TextBlock Text="OffsetY" Width="48" VerticalAlignment="Center"/>
+            <TextBox x:Name="MapOffsetYBox" Width="60"/>
+        </StackPanel>
+        <TextBlock Text="Scale/offset nudge the default projection if the marker drifts."
+                   FontSize="9" Foreground="#99000000" TextWrapping="Wrap" Margin="0,0,0,14"/>
 
         <TextBlock Text="Chart" Margin="0,0,0,4"/>
         <StackPanel Margin="0,0,0,4">

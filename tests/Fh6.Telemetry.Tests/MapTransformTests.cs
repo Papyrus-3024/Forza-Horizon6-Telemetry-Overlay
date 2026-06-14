@@ -176,4 +176,38 @@ public class MapTransformTests
         }
         finally { File.Delete(path); }
     }
+
+    // ── Normalize clamps MapZoom and MapScale ─────────────────────────────────
+
+    [Fact]
+    public void Normalize_clamps_MapZoom_to_valid_range()
+    {
+        var cfg = new OverlayConfig { MapZoom = 0.0 };
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(1.0, cfg.MapZoom);
+
+        cfg.MapZoom = 99.0;
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(16.0, cfg.MapZoom);
+
+        cfg.MapZoom = 4.0;
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(4.0, cfg.MapZoom);
+    }
+
+    [Fact]
+    public void Normalize_clamps_MapScale_to_valid_range()
+    {
+        var cfg = new OverlayConfig { MapScale = 0.0 };
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(0.1, cfg.MapScale);
+
+        cfg.MapScale = 100.0;
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(10.0, cfg.MapScale);
+
+        cfg.MapScale = 1.5;
+        cfg.Normalize(OverlayLayout.BottomStrip);
+        Assert.Equal(1.5, cfg.MapScale);
+    }
 }

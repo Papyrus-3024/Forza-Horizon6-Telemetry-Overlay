@@ -17,7 +17,6 @@ public partial class OverlayWindow : Window
     private const uint VK_F8  = 0x77;
     private const uint VK_F9  = 0x78;
     private const uint VK_F10 = 0x79;
-    private const uint VK_F11 = 0x7A;
 
     private readonly TelemetryViewModel _viewModel;
     private readonly OverlayConfig _config;
@@ -25,7 +24,6 @@ public partial class OverlayWindow : Window
     private IntPtr _hwnd;
     private bool _editMode;
     private bool _settingsOpen;
-    private bool _calibrateOpen;
 
     // Animation tick — driven by CompositionTarget.Rendering
     private readonly Stopwatch _renderClock = new();
@@ -100,7 +98,6 @@ public partial class OverlayWindow : Window
         _hotkeys.Register(VK_F8, ToggleEditMode);
         _hotkeys.Register(VK_F9, OpenSettings);
         _hotkeys.Register(VK_F10, CycleLayout);
-        _hotkeys.Register(VK_F11, OpenCalibrate);
     }
 
     private void ToggleEditMode()
@@ -148,26 +145,6 @@ public partial class OverlayWindow : Window
             finally
             {
                 _settingsOpen = false;
-            }
-        }));
-    }
-
-    private void OpenCalibrate()
-    {
-        if (_calibrateOpen) return;
-
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            _calibrateOpen = true;
-            try
-            {
-                var dialog = new Settings.CalibrateWindow(_viewModel, _config) { Owner = this };
-                if (dialog.ShowDialog() == true)
-                    FreeLayoutHost.ApplyConfig(_config);
-            }
-            finally
-            {
-                _calibrateOpen = false;
             }
         }));
     }
