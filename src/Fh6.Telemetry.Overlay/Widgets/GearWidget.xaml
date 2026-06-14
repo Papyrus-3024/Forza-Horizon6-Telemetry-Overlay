@@ -3,16 +3,41 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:w="clr-namespace:Fh6.Telemetry.Overlay.Widgets"
              TextOptions.TextFormattingMode="Display">
+    <UserControl.Resources>
+        <!-- Slide-in: new digit enters from below (slides up into position) -->
+        <Storyboard x:Key="DrumRoll">
+            <!-- Start offset below, end at zero (natural position) -->
+            <DoubleAnimation
+                Storyboard.TargetName="GearTranslate"
+                Storyboard.TargetProperty="Y"
+                From="56" To="0"
+                Duration="0:0:0.15">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </UserControl.Resources>
+
     <Border Background="{DynamicResource Fh6.Surface}"
             BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="14,8">
+            CornerRadius="10" Padding="14,8"
+            ClipToBounds="True">
         <StackPanel>
             <TextBlock Text="GEAR"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
                        FontWeight="Bold"/>
-            <TextBlock Text="{Binding Gear}"
-                       Foreground="{DynamicResource Fh6.TextPrimary}" FontSize="52" FontWeight="Bold" FontFamily="Consolas"
-                       LineHeight="52" LineStackingStrategy="BlockLineHeight"/>
+            <!-- Clipping container so the outgoing digit doesn't overflow the panel -->
+            <Grid Height="52" ClipToBounds="True">
+                <TextBlock x:Name="GearText"
+                           Text="{Binding Gear}"
+                           Foreground="{DynamicResource Fh6.TextPrimary}" FontSize="52" FontWeight="Bold" FontFamily="Consolas"
+                           LineHeight="52" LineStackingStrategy="BlockLineHeight">
+                    <TextBlock.RenderTransform>
+                        <TranslateTransform x:Name="GearTranslate" Y="0"/>
+                    </TextBlock.RenderTransform>
+                </TextBlock>
+            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

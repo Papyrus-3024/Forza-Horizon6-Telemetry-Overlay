@@ -49,6 +49,8 @@ public partial class FreeLayout : UserControl
             [WidgetId.PowerTorque] = ptWidget,
             [WidgetId.Chart]       = _chartWidget,
             [WidgetId.Tire]        = tireWidget,
+            [WidgetId.SpeedTape]   = new SpeedTapeWidget(),
+            [WidgetId.ShiftLadder] = new ShiftLadderWidget(),
         };
 
         foreach (var w in _widgets.Values)
