@@ -24,6 +24,19 @@
         <Slider x:Name="HudScaleSlider" Minimum="0.5" Maximum="2.5" TickFrequency="0.05"
                 IsSnapToTickEnabled="True" Margin="0,2,0,14"/>
 
+        <TextBlock Text="Theme" Margin="0,0,0,4"/>
+        <StackPanel Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                <TextBlock Text="Preset" Width="90" VerticalAlignment="Center"/>
+                <ComboBox x:Name="ThemePresetBox" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Custom accent" Width="90" VerticalAlignment="Center"/>
+                <TextBox x:Name="CustomAccentBox" Width="120"
+                         ToolTip="#RRGGBB or #AARRGGBB — leave blank to use preset accent"/>
+            </StackPanel>
+        </StackPanel>
+
         <TextBlock Text="Chart" Margin="0,0,0,4"/>
         <StackPanel Margin="0,0,0,4">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">

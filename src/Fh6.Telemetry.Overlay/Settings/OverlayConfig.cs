@@ -1,4 +1,5 @@
 using Fh6.Telemetry.Overlay.Layouts;
+using Fh6.Telemetry.Overlay.Theming;
 using Fh6.Telemetry.Overlay.Widgets;
 
 
@@ -61,6 +62,12 @@ public sealed class OverlayConfig
     public double? WindowTop { get; set; }
     public double Scale { get; set; } = 1.0;
 
+    /// <summary>Name of the active color preset. Defaults to "DarkGlass".</summary>
+    public string ThemePreset { get; set; } = "DarkGlass";
+
+    /// <summary>Optional custom accent color as #RRGGBB or #AARRGGBB. Null = use preset accent.</summary>
+    public string? CustomAccent { get; set; }
+
     /// <summary>
     /// Per-widget customization, keyed by <see cref="WidgetId.ToString()"/>.
     /// Absent keys mean "not yet customized"; <see cref="Normalize"/> fills them from the seed.
@@ -83,6 +90,18 @@ public sealed class OverlayConfig
     public void Normalize(OverlayLayout layout)
     {
         Chart.Normalize();
+
+        // Clamp ThemePreset to a known value; silently fall back to DarkGlass.
+        if (!ThemePalette.PresetNames.Any(n => n.Equals(ThemePreset, StringComparison.OrdinalIgnoreCase)))
+            ThemePreset = "DarkGlass";
+
+        // Validate CustomAccent: clear it if it isn't a parseable hex string.
+        if (CustomAccent is not null)
+        {
+            var s = CustomAccent.Trim().TrimStart('#');
+            if (s.Length != 6 && s.Length != 8)
+                CustomAccent = null;
+        }
 
         var seeds = LayoutSeeds.For(layout);
 
