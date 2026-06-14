@@ -26,6 +26,17 @@ per car (keyed by `CarOrdinal`) so it survives restarts.
 `CarOrdinal` is in the packet; map it to a car name for context (austinbaccus #55). Needs a
 maintained ordinal→name table. Effort: S–M. Nice-to-have.
 
+## Mini 3D car overlay
+
+Render a small 3D car following the in-game pose from telemetry. See
+`MINI_3D_CAR_OVERLAY_FEASIBILITY.md` and the `feat/mini-3d-car-overlay` branch (feasibility
+verified: telemetry carries full 6-DOF pose). Effort: L.
+
+## In-flight branches (not yet merged)
+
+- `feat/web-race-review`, `feat/web-review-workbench` — web race-review workbench (WIP).
+- `backlog/map-overlay` — WPF map/minimap overlay (parked).
+
 ## Capture storage: binary capture + analysis export
 
 **Goal:** replace/augment today's JSONL capture with a compact on-disk format, and an
