@@ -87,22 +87,6 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // List which season maps are actually present (so the UI can note missing ones).
-  if (pathname === '/api/maps') {
-    const seasons = ['spring', 'summer', 'autumn', 'winter'];
-    const present = {};
-    for (const s of seasons) {
-      try {
-        await stat(join(PUBLIC_DIR, 'maps', `${s}.avif`));
-        present[s] = true;
-      } catch {
-        present[s] = false;
-      }
-    }
-    send(res, 200, JSON.stringify(present), { 'Content-Type': MIME['.json'] });
-    return;
-  }
-
   // Static files.
   if (pathname === '/') pathname = '/index.html';
   const filePath = safeJoin(PUBLIC_DIR, pathname);

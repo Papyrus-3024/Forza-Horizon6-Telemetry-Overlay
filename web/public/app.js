@@ -165,30 +165,42 @@ function bindLapSelector() {
   });
 }
 
-// ---- Optional season map ---------------------------------------------------
+// ---- Map backdrop ----------------------------------------------------------
 
-// Only load a backdrop if /api/maps reports one present; otherwise stay path-only
-// with no nag (the spec treats maps as a bonus, not a requirement).
-async function loadOptionalMap() {
-  const sel = $('seasonSelect');
-  let present = {};
-  try {
-    const res = await fetch('/api/maps');
-    present = await res.json();
-  } catch {
-    present = {};
-  }
-  const apply = (season) => {
-    if (!present[season]) {
+// Remote FH6 map images, keyed by the map-style selector. The seasonal maps are
+// the full-island top-down renders; "road" is an alternative Google-style road
+// map (incomplete — see the calibration TODO in track.js).
+const MAP_SOURCES = {
+  spring: 'https://cdn.leox.dev/fh6/map/spring.avif',
+  summer: 'https://cdn.leox.dev/fh6/map/summer.avif',
+  autumn: 'https://cdn.leox.dev/fh6/map/autumn.avif',
+  winter: 'https://cdn.leox.dev/fh6/map/winter.avif',
+  road: 'https://i.imgur.com/wG2Kgx7.jpeg',
+};
+
+// Swap the backdrop to the chosen style. Remote loads are async, so a stale
+// request finishing after a newer pick must not clobber the current map.
+function loadMap() {
+  const sel = $('mapSelect');
+  let token = 0;
+  const apply = (style) => {
+    const url = MAP_SOURCES[style];
+    if (!url) {
       track.setMap(null);
       return;
     }
+    const mine = ++token;
     const img = new Image();
-    img.onload = () => track.setMap(img);
-    img.onerror = () => track.setMap(null);
-    img.src = `/maps/${season}.avif`;
+    img.crossOrigin = 'anonymous'; // keep the canvas un-tainted for any future pixel readback
+    img.onload = () => { if (mine === token) track.setMap(img); };
+    img.onerror = () => { if (mine === token) track.setMap(null); };
+    img.src = url;
   };
   if (sel) {
+    // ?style=<name> deep-links a starting map (mirrors ?capture=), which also
+    // lets headless screenshots pick the lighter road map for quick verification.
+    const wanted = new URLSearchParams(location.search).get('style');
+    if (wanted && MAP_SOURCES[wanted]) sel.value = wanted;
     sel.addEventListener('change', (e) => apply(e.target.value));
     apply(sel.value);
   }
@@ -199,7 +211,7 @@ async function loadOptionalMap() {
 async function init() {
   bindCaptureControls();
   bindLapSelector();
-  loadOptionalMap();
+  loadMap();
   const names = await listCaptures();
 
   // ?capture=<name> auto-loads a bundled capture on boot.
