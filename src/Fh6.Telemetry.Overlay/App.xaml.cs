@@ -74,7 +74,8 @@ public partial class App : Application
             }
 
             var honorTiming = replayFile is not null;
-            _pump = new TelemetryPump(source, vm, window.Dispatcher, honorTiming, speed);
+            var diagLabel = replayFile is not null ? "replay" : $"udp :{config.Port}";
+            _pump = new TelemetryPump(source, vm, window.Dispatcher, honorTiming, speed, diagLabel);
             _pump.Start();
             vm.SetStatus("");
         }
