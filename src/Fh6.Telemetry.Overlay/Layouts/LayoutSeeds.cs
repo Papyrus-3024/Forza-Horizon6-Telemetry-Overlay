@@ -46,6 +46,7 @@ public static class LayoutSeeds
             [WidgetId.FuelArc]         = new( 530,   8, Visible: false),
             [WidgetId.SpeedSlipstream] = new(  98,   8, Visible: false),
             [WidgetId.ArcTach]         = new(  98,   8, Visible: false),
+            [WidgetId.Suspension]      = new(1162,   8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -76,6 +77,7 @@ public static class LayoutSeeds
             [WidgetId.FuelArc]         = new(114, 730, Visible: false),
             [WidgetId.SpeedSlipstream] = new(  8, 870, Visible: false),
             [WidgetId.ArcTach]         = new(  8, 730, Visible: false),
+            [WidgetId.Suspension]      = new(170, 570),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
@@ -104,5 +106,6 @@ public static class LayoutSeeds
             [WidgetId.SteeringHorizon] = new( 860, 990, Visible: false),
             [WidgetId.FuelArc]         = new( 972, 990, Visible: false),
             [WidgetId.SpeedSlipstream] = new( 640, 870, Visible: false),
+            [WidgetId.Suspension]      = new(1180, 900, Visible: false),
         };
 }
