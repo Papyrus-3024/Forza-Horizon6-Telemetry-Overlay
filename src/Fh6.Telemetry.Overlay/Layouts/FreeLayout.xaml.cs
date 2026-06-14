@@ -31,7 +31,10 @@ public partial class FreeLayout : UserControl
         InitializeComponent();
 
         // Instantiate widgets once.
-        var gForceWidget = new GForceWidget();
+        var gForceWidget   = new GForceWidget();
+        var boostWidget    = new BoostWidget();
+        var ptWidget       = new PowerTorqueWidget();
+        var tireWidget     = new TireWidget();
         _chartWidget = new ChartWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
@@ -40,21 +43,37 @@ public partial class FreeLayout : UserControl
             [WidgetId.Speed]       = new SpeedWidget(),
             [WidgetId.RpmShift]    = new RpmShiftWidget(),
             [WidgetId.PedalsSteer] = new PedalsSteerWidget(),
-            [WidgetId.Boost]       = new BoostWidget(),
+            [WidgetId.Boost]       = boostWidget,
             [WidgetId.LapTiming]   = new LapTimingWidget(),
             [WidgetId.GForce]      = gForceWidget,
-            [WidgetId.PowerTorque] = new PowerTorqueWidget(),
+            [WidgetId.PowerTorque] = ptWidget,
             [WidgetId.Chart]       = _chartWidget,
+            [WidgetId.Tire]        = tireWidget,
         };
 
         foreach (var w in _widgets.Values)
             Surface.Children.Add(w);
 
         // Bind GForceWidget DependencyProperties to the ViewModel via inherited DataContext.
-        var latBinding  = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.DisplayedGLat))  { Mode = System.Windows.Data.BindingMode.OneWay };
-        var longBinding = new System.Windows.Data.Binding(nameof(ViewModels.TelemetryViewModel.DisplayedGLong)) { Mode = System.Windows.Data.BindingMode.OneWay };
-        System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LatGProperty,  latBinding);
-        System.Windows.Data.BindingOperations.SetBinding(gForceWidget, GForceWidget.LongGProperty, longBinding);
+        Bind(gForceWidget, GForceWidget.LatGProperty,  nameof(ViewModels.TelemetryViewModel.DisplayedGLat));
+        Bind(gForceWidget, GForceWidget.LongGProperty, nameof(ViewModels.TelemetryViewModel.DisplayedGLong));
+
+        // Bind BoostWidget DP.
+        Bind(boostWidget, BoostWidget.DisplayedBoostRawProperty, nameof(ViewModels.TelemetryViewModel.DisplayedBoostRaw));
+
+        // Bind PowerTorqueWidget DPs.
+        Bind(ptWidget, PowerTorqueWidget.DisplayedPowerRawProperty,  nameof(ViewModels.TelemetryViewModel.DisplayedPowerRaw));
+        Bind(ptWidget, PowerTorqueWidget.DisplayedTorqueRawProperty, nameof(ViewModels.TelemetryViewModel.DisplayedTorqueRaw));
+
+        // Bind TireWidget DPs.
+        Bind(tireWidget, TireWidget.TireTempFLProperty, nameof(ViewModels.TelemetryViewModel.TireTempFL));
+        Bind(tireWidget, TireWidget.TireTempFRProperty, nameof(ViewModels.TelemetryViewModel.TireTempFR));
+        Bind(tireWidget, TireWidget.TireTempRLProperty, nameof(ViewModels.TelemetryViewModel.TireTempRL));
+        Bind(tireWidget, TireWidget.TireTempRRProperty, nameof(ViewModels.TelemetryViewModel.TireTempRR));
+        Bind(tireWidget, TireWidget.TireSlipFLProperty, nameof(ViewModels.TelemetryViewModel.TireSlipFL));
+        Bind(tireWidget, TireWidget.TireSlipFRProperty, nameof(ViewModels.TelemetryViewModel.TireSlipFR));
+        Bind(tireWidget, TireWidget.TireSlipRLProperty, nameof(ViewModels.TelemetryViewModel.TireSlipRL));
+        Bind(tireWidget, TireWidget.TireSlipRRProperty, nameof(ViewModels.TelemetryViewModel.TireSlipRR));
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;
@@ -273,6 +292,17 @@ public partial class FreeLayout : UserControl
             wc.X = Canvas.GetLeft(widget);
             wc.Y = Canvas.GetTop(widget);
         }
+    }
+
+    // ---- Binding helper ----
+
+    private static void Bind(DependencyObject target, DependencyProperty dp, string vmPropertyName)
+    {
+        var binding = new System.Windows.Data.Binding(vmPropertyName)
+        {
+            Mode = System.Windows.Data.BindingMode.OneWay,
+        };
+        System.Windows.Data.BindingOperations.SetBinding(target, dp, binding);
     }
 
     // ---- Visual tree helper ----

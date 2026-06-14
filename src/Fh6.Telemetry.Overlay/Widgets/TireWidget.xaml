@@ -1,0 +1,128 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.TireWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             TextOptions.TextFormattingMode="Display">
+    <Border Background="{DynamicResource Fh6.Surface}"
+            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+            CornerRadius="10" Padding="10,8">
+        <StackPanel>
+            <TextBlock Text="TIRES"
+                       Foreground="{DynamicResource Fh6.TextLabel}" FontSize="9" FontFamily="Consolas"
+                       FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+
+            <!-- 3-column grid: FL | car | FR / RL | car | RR -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- FL corner -->
+                <StackPanel Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center">
+                    <Border x:Name="TileFL"
+                            Width="52" Height="30" CornerRadius="6"
+                            HorizontalAlignment="Center">
+                        <TextBlock x:Name="TempFL"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Consolas" FontSize="12" FontWeight="Bold"/>
+                    </Border>
+                    <!-- grip headroom bar -->
+                    <Border Width="52" Height="4" CornerRadius="2" Margin="0,3,0,0"
+                            Background="#22FFFFFF">
+                        <Rectangle x:Name="GripFL"
+                                   Height="4" HorizontalAlignment="Left" RadiusX="2" RadiusY="2"/>
+                    </Border>
+                    <TextBlock Text="FL" Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Car silhouette spanning both rows -->
+                <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+                        Width="20" Height="54"
+                        CornerRadius="10,10,7,7"
+                        VerticalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#33FFFFFF" Offset="0"/>
+                            <GradientStop Color="#0DFFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.BorderBrush>
+                        <SolidColorBrush Color="#22FFFFFF"/>
+                    </Border.BorderBrush>
+                    <Border.BorderThickness>1</Border.BorderThickness>
+                    <!-- windshield hint -->
+                    <Border Width="12" Height="14" CornerRadius="3"
+                            VerticalAlignment="Top" Margin="0,14,0,0"
+                            Background="#14FFFFFF"/>
+                </Border>
+
+                <!-- FR corner -->
+                <StackPanel Grid.Column="4" Grid.Row="0" HorizontalAlignment="Center">
+                    <Border x:Name="TileFR"
+                            Width="52" Height="30" CornerRadius="6"
+                            HorizontalAlignment="Center">
+                        <TextBlock x:Name="TempFR"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Consolas" FontSize="12" FontWeight="Bold"/>
+                    </Border>
+                    <Border Width="52" Height="4" CornerRadius="2" Margin="0,3,0,0"
+                            Background="#22FFFFFF">
+                        <Rectangle x:Name="GripFR"
+                                   Height="4" HorizontalAlignment="Left" RadiusX="2" RadiusY="2"/>
+                    </Border>
+                    <TextBlock Text="FR" Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- RL corner -->
+                <StackPanel Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center">
+                    <Border x:Name="TileRL"
+                            Width="52" Height="30" CornerRadius="6"
+                            HorizontalAlignment="Center">
+                        <TextBlock x:Name="TempRL"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Consolas" FontSize="12" FontWeight="Bold"/>
+                    </Border>
+                    <Border Width="52" Height="4" CornerRadius="2" Margin="0,3,0,0"
+                            Background="#22FFFFFF">
+                        <Rectangle x:Name="GripRL"
+                                   Height="4" HorizontalAlignment="Left" RadiusX="2" RadiusY="2"/>
+                    </Border>
+                    <TextBlock Text="RL" Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- RR corner -->
+                <StackPanel Grid.Column="4" Grid.Row="2" HorizontalAlignment="Center">
+                    <Border x:Name="TileRR"
+                            Width="52" Height="30" CornerRadius="6"
+                            HorizontalAlignment="Center">
+                        <TextBlock x:Name="TempRR"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Consolas" FontSize="12" FontWeight="Bold"/>
+                    </Border>
+                    <Border Width="52" Height="4" CornerRadius="2" Margin="0,3,0,0"
+                            Background="#22FFFFFF">
+                        <Rectangle x:Name="GripRR"
+                                   Height="4" HorizontalAlignment="Left" RadiusX="2" RadiusY="2"/>
+                    </Border>
+                    <TextBlock Text="RR" Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                               HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>
