@@ -3,24 +3,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="240" Height="240"
              SizeChanged="OnSizeChanged">
-    <Border Background="#C8121821"
+    <!-- Fixed-size viewport: map scrolls under a centred car marker -->
+    <Border x:Name="Viewport"
+            Background="#C8121821"
             BorderBrush="#26FFFFFF" BorderThickness="1"
-            CornerRadius="8" Padding="4">
+            CornerRadius="8"
+            ClipToBounds="True">
         <Grid>
-            <!-- Map image — Uniform keeps the full image visible regardless of resolution -->
+            <!-- Map image at natural size; a TransformGroup pans/zooms it so the car is centred -->
             <Image x:Name="MapImage"
-                   Stretch="Uniform"
-                   HorizontalAlignment="Stretch"
-                   VerticalAlignment="Stretch"/>
-            <!-- Marker overlay canvas — same size as the Grid cell; marker is positioned in code-behind -->
-            <Canvas x:Name="Overlay" IsHitTestVisible="False">
-                <Ellipse x:Name="Marker"
-                         Width="10" Height="10"
-                         Fill="#E05A5A"
-                         Stroke="White" StrokeThickness="1.2"
-                         Visibility="Collapsed"/>
-            </Canvas>
-            <!-- Placeholder shown when no image or calibration is available -->
+                   Stretch="None"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Top"
+                   RenderTransformOrigin="0,0">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="MapScale"/>
+                        <TranslateTransform x:Name="MapTranslate"/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
+
+            <!-- Fixed centred marker — always at viewport centre, never moves -->
+            <Ellipse x:Name="Marker"
+                     Width="10" Height="10"
+                     Fill="#E05A5A"
+                     Stroke="White" StrokeThickness="1.2"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Visibility="Collapsed"
+                     IsHitTestVisible="False"/>
+
+            <!-- Placeholder shown when no image is available -->
             <TextBlock x:Name="Placeholder"
                        Foreground="#99FFFFFF" FontSize="10" FontFamily="Consolas"
                        TextWrapping="Wrap" TextAlignment="Center"
