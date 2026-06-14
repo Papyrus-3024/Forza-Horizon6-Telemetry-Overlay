@@ -14,4 +14,7 @@ public enum WidgetId
     Tire,
     SpeedTape,
     ShiftLadder,
+    SteeringHorizon,
+    FuelArc,
+    SpeedSlipstream,
 }

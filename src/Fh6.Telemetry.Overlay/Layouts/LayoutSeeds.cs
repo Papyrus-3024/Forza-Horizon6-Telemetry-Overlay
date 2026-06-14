@@ -40,8 +40,11 @@ public static class LayoutSeeds
             [WidgetId.PowerTorque] = new(954,   8),
             [WidgetId.Chart]       = new(1162,  8, Visible: false),
             [WidgetId.Tire]        = new(1162,  8, Visible: false),
-            [WidgetId.SpeedTape]   = new( 98,   8, Visible: false),
-            [WidgetId.ShiftLadder] = new(222,   8, Visible: false),
+            [WidgetId.SpeedTape]       = new(  98,   8, Visible: false),
+            [WidgetId.ShiftLadder]     = new( 222,   8, Visible: false),
+            [WidgetId.SteeringHorizon] = new( 424,   8, Visible: false),
+            [WidgetId.FuelArc]         = new( 530,   8, Visible: false),
+            [WidgetId.SpeedSlipstream] = new(  98,   8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -65,9 +68,12 @@ public static class LayoutSeeds
             [WidgetId.GForce]      = new(  8, 448),
             [WidgetId.PowerTorque] = new(120, 448),
             [WidgetId.Tire]        = new(  8, 570),
-            [WidgetId.Chart]       = new(  8, 720, Visible: false),
-            [WidgetId.SpeedTape]   = new( 98,   8, Visible: false),
-            [WidgetId.ShiftLadder] = new(220,   8, Visible: false),
+            [WidgetId.Chart]           = new(  8, 720, Visible: false),
+            [WidgetId.SpeedTape]       = new( 98,   8, Visible: false),
+            [WidgetId.ShiftLadder]     = new(220,   8, Visible: false),
+            [WidgetId.SteeringHorizon] = new(  8, 730, Visible: false),
+            [WidgetId.FuelArc]         = new(114, 730, Visible: false),
+            [WidgetId.SpeedSlipstream] = new(  8, 870, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
@@ -87,7 +93,10 @@ public static class LayoutSeeds
             [WidgetId.PowerTorque] = new(972,  990, Visible: false),
             [WidgetId.Tire]        = new(1180, 900, Visible: false),
             [WidgetId.Chart]       = new(640,  900, Visible: false),
-            [WidgetId.SpeedTape]   = new(1056, 840, Visible: false),
-            [WidgetId.ShiftLadder] = new(966,  764, Visible: false),
+            [WidgetId.SpeedTape]       = new(1056, 840, Visible: false),
+            [WidgetId.ShiftLadder]     = new( 966, 764, Visible: false),
+            [WidgetId.SteeringHorizon] = new( 860, 990, Visible: false),
+            [WidgetId.FuelArc]         = new( 972, 990, Visible: false),
+            [WidgetId.SpeedSlipstream] = new( 640, 870, Visible: false),
         };
 }
