@@ -48,13 +48,11 @@ public partial class SteeringHorizonWidget : UserControl
         // Clip to rounded border interior.
         ClipRect.Rect = new Rect(1, 1, w - 2, h - 2);
 
-        // Centre the rotation pivot on the visible area.
+        // The plane canvas is centred in the widget and rotates about its own centre
+        // (140,100 in canvas space, set in XAML), which maps to the widget centre — so the
+        // horizon line stays pinned to the middle and only tilts. Reticle uses widget coords.
         double cx = w / 2.0;
         double cy = h / 2.0;
-        PlaneRotation.CenterX = cx;
-        PlaneRotation.CenterY = cy;
-        // Also keep the plane canvas centred.
-        HorizonPlane.RenderTransformOrigin = new Point(0.5, 0.5);
 
         double steer = Math.Clamp(Value, -1.0, 1.0);
         double tiltDeg = steer * MaxTiltDeg;

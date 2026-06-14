@@ -123,6 +123,31 @@
                                HorizontalAlignment="Center" Margin="0,2,0,0"/>
                 </StackPanel>
             </Grid>
+
+            <!-- Temp scale legend: cold (blue) → optimal (green) → warm (amber) → hot (red) -->
+            <Grid Margin="0,7,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="COLD" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Fh6.TextLabel}"
+                           FontSize="7" FontFamily="Consolas" FontWeight="Bold" Margin="0,0,4,0"/>
+                <Border Grid.Column="1" Height="5" CornerRadius="2.5" VerticalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#4F95E0" Offset="0.0"/>
+                            <GradientStop Color="#2BBD74" Offset="0.45"/>
+                            <GradientStop Color="#E09C3A" Offset="0.75"/>
+                            <GradientStop Color="#EF4332" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+                <TextBlock Grid.Column="2" Text="HOT" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Fh6.TextLabel}"
+                           FontSize="7" FontFamily="Consolas" FontWeight="Bold" Margin="4,0,0,0"/>
+            </Grid>
         </StackPanel>
     </Border>
 </UserControl>

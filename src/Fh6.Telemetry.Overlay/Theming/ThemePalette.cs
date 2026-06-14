@@ -15,6 +15,7 @@ public sealed class ThemePalette
     public SolidColorBrush Border        { get; private init; } = null!;
     public SolidColorBrush TextPrimary   { get; private init; } = null!;
     public SolidColorBrush TextSecondary { get; private init; } = null!;
+    public SolidColorBrush TextLabel     { get; private init; } = null!;
     public SolidColorBrush Good          { get; private init; } = null!;
     public SolidColorBrush Warn          { get; private init; } = null!;
     public SolidColorBrush Danger        { get; private init; } = null!;
@@ -33,6 +34,7 @@ public sealed class ThemePalette
                 Border        = Frozen(0x26, 0xFF, 0xFF, 0xFF),   // subtle light rim
                 TextPrimary   = Frozen(0xFF, 0xF2, 0xF4, 0xF7),
                 TextSecondary = Frozen(0x99, 0xFF, 0xFF, 0xFF),
+                TextLabel     = Frozen(0x66, 0xFF, 0xFF, 0xFF),   // dim caption tone
                 Good          = Frozen(0xFF, 0x5A, 0xD1, 0x5A),   // green
                 Warn          = Frozen(0xFF, 0xE0, 0xC9, 0x3A),   // amber
                 Danger        = Frozen(0xFF, 0xE0, 0x5A, 0x5A),   // red
@@ -45,6 +47,7 @@ public sealed class ThemePalette
                 Border        = Frozen(0x33, 0xFF, 0x80, 0x80),
                 TextPrimary   = Frozen(0xFF, 0xF5, 0xF0, 0xF0),
                 TextSecondary = Frozen(0x99, 0xFF, 0xCC, 0xCC),
+                TextLabel     = Frozen(0x66, 0xFF, 0xCC, 0xCC),
                 Good          = Frozen(0xFF, 0x5A, 0xD1, 0x5A),
                 Warn          = Frozen(0xFF, 0xE0, 0xC9, 0x3A),
                 Danger        = Frozen(0xFF, 0xFF, 0x22, 0x22),
@@ -57,6 +60,7 @@ public sealed class ThemePalette
                 Border        = Frozen(0x33, 0x80, 0xC0, 0xFF),
                 TextPrimary   = Frozen(0xFF, 0xEE, 0xF4, 0xFF),
                 TextSecondary = Frozen(0x99, 0xCC, 0xE0, 0xFF),
+                TextLabel     = Frozen(0x66, 0xCC, 0xE0, 0xFF),
                 Good          = Frozen(0xFF, 0x5A, 0xD1, 0x5A),
                 Warn          = Frozen(0xFF, 0xE0, 0xC9, 0x3A),
                 Danger        = Frozen(0xFF, 0xE0, 0x5A, 0x5A),
@@ -69,6 +73,7 @@ public sealed class ThemePalette
                 Border        = Frozen(0x40, 0xFF, 0xFF, 0xFF),
                 TextPrimary   = Frozen(0xFF, 0xFF, 0xFF, 0xFF),
                 TextSecondary = Frozen(0x88, 0xFF, 0xFF, 0xFF),
+                TextLabel     = Frozen(0x55, 0xFF, 0xFF, 0xFF),
                 Good          = Frozen(0xFF, 0xBB, 0xBB, 0xBB),
                 Warn          = Frozen(0xFF, 0x88, 0x88, 0x88),
                 Danger        = Frozen(0xFF, 0x55, 0x55, 0x55),
@@ -106,6 +111,7 @@ public sealed class ThemePalette
             Border        = palette.Border,
             TextPrimary   = palette.TextPrimary,
             TextSecondary = palette.TextSecondary,
+            TextLabel     = palette.TextLabel,
             Good          = palette.Good,
             Warn          = palette.Warn,
             Danger        = palette.Danger,

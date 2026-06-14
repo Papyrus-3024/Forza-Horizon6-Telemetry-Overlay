@@ -14,6 +14,7 @@ public static class ThemeApplier
     public const string KeyBorder        = "Fh6.Border";
     public const string KeyTextPrimary   = "Fh6.TextPrimary";
     public const string KeyTextSecondary = "Fh6.TextSecondary";
+    public const string KeyTextLabel     = "Fh6.TextLabel";
     public const string KeyGood          = "Fh6.Good";
     public const string KeyWarn          = "Fh6.Warn";
     public const string KeyDanger        = "Fh6.Danger";
@@ -38,6 +39,7 @@ public static class ThemeApplier
             res[KeyBorder]        = p.Border;
             res[KeyTextPrimary]   = p.TextPrimary;
             res[KeyTextSecondary] = p.TextSecondary;
+            res[KeyTextLabel]     = p.TextLabel;
             res[KeyGood]          = p.Good;
             res[KeyWarn]          = p.Warn;
             res[KeyDanger]        = p.Danger;
