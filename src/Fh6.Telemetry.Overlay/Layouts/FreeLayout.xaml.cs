@@ -17,6 +17,11 @@ public partial class FreeLayout : UserControl
     // Held separately so ApplyConfig can call Configure() without casting.
     private readonly ChartWidget _chartWidget;
 
+    // Widgets that require direct DP bindings wired in the constructor.
+    private readonly SteeringHorizonWidget _horizonWidget;
+    private readonly FuelArcWidget         _fuelArcWidget;
+    private readonly SpeedSlipstreamWidget _slipstreamWidget;
+
     // Edit-mode state
     private bool _editMode;
 
@@ -35,7 +40,10 @@ public partial class FreeLayout : UserControl
         var boostWidget    = new BoostWidget();
         var ptWidget       = new PowerTorqueWidget();
         var tireWidget     = new TireWidget();
-        _chartWidget = new ChartWidget();
+        _chartWidget      = new ChartWidget();
+        _horizonWidget    = new SteeringHorizonWidget();
+        _fuelArcWidget    = new FuelArcWidget();
+        _slipstreamWidget = new SpeedSlipstreamWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
@@ -49,8 +57,11 @@ public partial class FreeLayout : UserControl
             [WidgetId.PowerTorque] = ptWidget,
             [WidgetId.Chart]       = _chartWidget,
             [WidgetId.Tire]        = tireWidget,
-            [WidgetId.SpeedTape]   = new SpeedTapeWidget(),
-            [WidgetId.ShiftLadder] = new ShiftLadderWidget(),
+            [WidgetId.SpeedTape]        = new SpeedTapeWidget(),
+            [WidgetId.ShiftLadder]      = new ShiftLadderWidget(),
+            [WidgetId.SteeringHorizon]  = _horizonWidget,
+            [WidgetId.FuelArc]          = _fuelArcWidget,
+            [WidgetId.SpeedSlipstream]  = _slipstreamWidget,
         };
 
         foreach (var w in _widgets.Values)
@@ -76,6 +87,15 @@ public partial class FreeLayout : UserControl
         Bind(tireWidget, TireWidget.TireSlipFRProperty, nameof(ViewModels.TelemetryViewModel.TireSlipFR));
         Bind(tireWidget, TireWidget.TireSlipRLProperty, nameof(ViewModels.TelemetryViewModel.TireSlipRL));
         Bind(tireWidget, TireWidget.TireSlipRRProperty, nameof(ViewModels.TelemetryViewModel.TireSlipRR));
+
+        // Bind SteeringHorizonWidget DP.
+        Bind(_horizonWidget, SteeringHorizonWidget.ValueProperty, nameof(ViewModels.TelemetryViewModel.DisplayedSteer));
+
+        // Bind FuelArcWidget DP.
+        Bind(_fuelArcWidget, FuelArcWidget.FuelFractionProperty, nameof(ViewModels.TelemetryViewModel.FuelFraction));
+
+        // Bind SpeedSlipstreamWidget DP.
+        Bind(_slipstreamWidget, SpeedSlipstreamWidget.SpeedMphProperty, nameof(ViewModels.TelemetryViewModel.DisplayedSpeedMph));
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;

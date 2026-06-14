@@ -1,0 +1,90 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.SteeringHorizonWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="200" Height="90"
+             SizeChanged="OnSizeChanged">
+    <Border Background="{DynamicResource Fh6.Surface}"
+            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+            CornerRadius="10">
+        <Grid>
+            <!-- Clipping mask so horizon plane stays inside the rounded border -->
+            <Grid.Clip>
+                <RectangleGeometry x:Name="ClipRect"/>
+            </Grid.Clip>
+
+            <!-- Horizon plane: rotates with steer; contains sky band + ground grid -->
+            <Canvas x:Name="HorizonPlane" Width="280" Height="200"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Canvas.RenderTransform>
+                    <RotateTransform x:Name="PlaneRotation" CenterX="140" CenterY="100"/>
+                </Canvas.RenderTransform>
+
+                <!-- Sky half -->
+                <Rectangle Canvas.Left="0" Canvas.Top="0" Width="280" Height="100"
+                           Fill="#FF1A2030"/>
+                <!-- Ground half -->
+                <Rectangle Canvas.Left="0" Canvas.Top="100" Width="280" Height="100"
+                           Fill="#FF040A10"/>
+                <!-- Vertical grid lines on ground half (perspective grid feel) -->
+                <Rectangle Canvas.Left="0" Canvas.Top="100" Width="280" Height="100"
+                           Fill="Transparent">
+                    <Rectangle.OpacityMask>
+                        <DrawingBrush TileMode="Tile"
+                                      Viewport="0,0,28,100" ViewportUnits="Absolute"
+                                      Viewbox="0,0,1,1" ViewboxUnits="RelativeToBoundingBox">
+                            <DrawingBrush.Drawing>
+                                <GeometryDrawing Brush="#1A4FD1A5">
+                                    <GeometryDrawing.Geometry>
+                                        <RectangleGeometry Rect="0,0,0.04,1"/>
+                                    </GeometryDrawing.Geometry>
+                                </GeometryDrawing>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.OpacityMask>
+                </Rectangle>
+
+                <!-- Horizon line -->
+                <Line x:Name="HorizonLine"
+                      X1="0" Y1="100" X2="280" Y2="100"
+                      Stroke="{DynamicResource Fh6.Accent}" StrokeThickness="2">
+                    <Line.Effect>
+                        <BlurEffect Radius="3"/>
+                    </Line.Effect>
+                </Line>
+                <!-- Glow copy without blur -->
+                <Line X1="0" Y1="100" X2="280" Y2="100"
+                      Stroke="{DynamicResource Fh6.Accent}" StrokeThickness="1.5"
+                      Opacity="0.9"/>
+            </Canvas>
+
+            <!-- Fixed overlay: center cross / reference reticle -->
+            <Canvas IsHitTestVisible="False">
+                <!-- Horizontal reference marks left and right of center -->
+                <Line x:Name="RefLeft"
+                      Stroke="#80FFFFFF" StrokeThickness="1.5"
+                      StrokeDashArray="2,2"/>
+                <Line x:Name="RefRight"
+                      Stroke="#80FFFFFF" StrokeThickness="1.5"
+                      StrokeDashArray="2,2"/>
+                <!-- Center pip -->
+                <Ellipse x:Name="CenterPip"
+                         Width="5" Height="5"
+                         Fill="{DynamicResource Fh6.Accent}"/>
+            </Canvas>
+
+            <!-- Degree readout -->
+            <TextBlock x:Name="DegreeLabel"
+                       Foreground="{DynamicResource Fh6.TextSecondary}"
+                       FontFamily="Consolas" FontSize="10" FontWeight="Bold"
+                       HorizontalAlignment="Center" VerticalAlignment="Top"
+                       Margin="0,5,0,0"/>
+
+            <!-- Widget label -->
+            <TextBlock Text="HORIZON"
+                       Foreground="{DynamicResource Fh6.TextLabel}"
+                       FontFamily="Consolas" FontSize="9" FontWeight="Bold"
+                       HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                       Margin="8,0,0,5"/>
+        </Grid>
+    </Border>
+</UserControl>
