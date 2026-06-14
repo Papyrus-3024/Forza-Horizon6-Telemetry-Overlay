@@ -113,6 +113,14 @@ export function createTrack(canvas) {
 
   // Map image (when supplied) sits under the path; otherwise a neutral grid.
   // The grid scrolls with pan/zoom so the path reads as moving over a surface.
+  //
+  // TODO: georeference the backdrop. The seasonal images are full-island top-down
+  // renders, but we have no world(X,Z)->map(px) transform, so the map is drawn
+  // fitted/centered to the canvas and pans/zooms in lockstep with the path rather
+  // than being pinned to true coordinates. To pin it, capture two known world
+  // points and their pixel locations on a map, derive scale+offset, then drive
+  // drawImage from worldToScreen. The road (Google-style) map is incomplete and
+  // has a different crop/extent, so it needs its own separate calibration.
   function drawBackdrop() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     const img = state.mapImg;

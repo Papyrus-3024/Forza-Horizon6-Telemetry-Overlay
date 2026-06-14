@@ -49,12 +49,15 @@ by `/api/captures` + `/api/capture/:name`) or the **From file** picker. Two samp
 are committed — `sample-drive.jsonl` and the equivalent `sample-drive.bin` — so both
 paths work out of the box. Other captures dropped in `web/captures/` are git-ignored.
 
-## Optional world map
+## World map
 
-The track view needs no assets. If you place the large seasonal AVIF maps at
-`web/public/maps/{spring,summer,autumn,winter}.avif` (~50–60 MB each, **not
-committed**), the matching season is drawn as a backdrop under the path; otherwise
-the path renders over a neutral grid. `/api/maps` reports which are present.
+The **Map** > **Style** selector picks the backdrop drawn under the path. The four
+seasonal FH6 maps (Spring/Summer/Autumn/Winter) and an alternative "Road
+(Google-style)" map are loaded from remote URLs (see `MAP_SOURCES` in `app.js`), so
+no local assets are needed and nothing large is committed. If an image fails to
+load the path falls back to a neutral grid. The backdrop is fitted/centered and
+pans/zooms in lockstep with the path; it is not yet georeferenced to true world
+coordinates — see the calibration `TODO` in `track.js`.
 
 ## Packet format
 
