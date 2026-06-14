@@ -16,6 +16,7 @@ public partial class FreeLayout : UserControl
 
     // Held separately so ApplyConfig can call Configure() without casting.
     private readonly MapWidget _mapWidget;
+    private readonly ChartWidget _chartWidget;
 
     // Edit-mode state
     private bool _editMode;
@@ -33,6 +34,7 @@ public partial class FreeLayout : UserControl
         // Instantiate widgets once.
         var gForceWidget = new GForceWidget();
         _mapWidget = new MapWidget();
+        _chartWidget = new ChartWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
@@ -45,6 +47,7 @@ public partial class FreeLayout : UserControl
             [WidgetId.GForce]      = gForceWidget,
             [WidgetId.PowerTorque] = new PowerTorqueWidget(),
             [WidgetId.MiniMap]     = _mapWidget,
+            [WidgetId.Chart]       = _chartWidget,
         };
 
         foreach (var w in _widgets.Values)
@@ -69,11 +72,13 @@ public partial class FreeLayout : UserControl
     }
 
     /// <summary>
-    /// Sets the shared TelemetryViewModel as DataContext so widgets inherit it.
+    /// Sets the shared TelemetryViewModel as DataContext so widgets inherit it,
+    /// and wires widgets that require direct ViewModel references.
     /// </summary>
     public void SetViewModel(TelemetryViewModel viewModel)
     {
         DataContext = viewModel;
+        _chartWidget.SetHistory(viewModel.History);
     }
 
     /// <summary>
@@ -84,6 +89,9 @@ public partial class FreeLayout : UserControl
     {
         // Reload map image and calibration whenever config changes.
         _mapWidget.Configure(MapImageResolver.Resolve(cfg), cfg.MapCalibration);
+
+        // Apply chart window and series config.
+        _chartWidget.Configure(cfg.Chart);
 
         var seeds = LayoutSeeds.For(cfg.Layout);
         var globalScale = Math.Clamp(cfg.Scale, 0.5, 3.0);
