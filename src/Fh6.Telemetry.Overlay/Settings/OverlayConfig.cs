@@ -62,6 +62,10 @@ public sealed class OverlayConfig
     public double? WindowTop { get; set; }
     public double Scale { get; set; } = 1.0;
 
+    /// <summary>Persisted settings-flyout position (null = default top-right).</summary>
+    public double? FlyoutX { get; set; }
+    public double? FlyoutY { get; set; }
+
     /// <summary>Name of the active color preset. Defaults to "DarkGlass".</summary>
     public string ThemePreset { get; set; } = "DarkGlass";
 
