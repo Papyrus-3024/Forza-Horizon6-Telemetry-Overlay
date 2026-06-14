@@ -7,7 +7,8 @@ public readonly struct TelemetryReadout
 
     public TelemetryReadout(in TelemetryPacket p)
     {
-        IsRaceOn = p.IsRaceOn == 1;
+        IsRaceOn    = p.IsRaceOn == 1;
+        TimestampMs = p.TimestampMs;
         SpeedMs = p.Speed;
         SpeedKmh = p.Speed * 3.6f;
         Gear = p.Gear;
@@ -39,7 +40,8 @@ public readonly struct TelemetryReadout
         Position = p.Position;
     }
 
-    public bool IsRaceOn { get; }
+    public bool IsRaceOn    { get; }
+    public uint TimestampMs { get; }
     public float SpeedMs { get; }
     public float SpeedKmh { get; }
     public int Gear { get; }

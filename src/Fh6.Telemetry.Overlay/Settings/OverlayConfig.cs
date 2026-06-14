@@ -2,6 +2,7 @@ using Fh6.Telemetry.Core;
 using Fh6.Telemetry.Overlay.Layouts;
 using Fh6.Telemetry.Overlay.Widgets;
 
+
 namespace Fh6.Telemetry.Overlay.Settings;
 
 public enum OverlayLayout
@@ -28,6 +29,36 @@ public sealed class SavedLayout
     public OverlayLayout BaseLayout { get; set; }
     public double Scale { get; set; } = 1.0;
     public Dictionary<string, WidgetConfig> Widgets { get; set; } = new();
+}
+
+/// <summary>Chart-specific configuration: time window and per-series visibility.</summary>
+public sealed class ChartConfig
+{
+    // Supported time-window steps (seconds). WindowSeconds is clamped to the nearest on normalize.
+    public static readonly double[] SupportedWindows = { 30.0, 60.0, 120.0 };
+
+    /// <summary>Visible time window in seconds. Clamped to one of <see cref="SupportedWindows"/> on load.</summary>
+    public double WindowSeconds { get; set; } = 60.0;
+
+    /// <summary>
+    /// Per-series enabled flags keyed by <see cref="ChartSeriesId.ToString()"/>.
+    /// Absent key means "use the catalog default for that series" (Throttle/Brake/Speed default on,
+    /// all others default off).
+    /// </summary>
+    public Dictionary<string, bool> Series { get; set; } = new();
+
+    /// <summary>Clamp <see cref="WindowSeconds"/> to the nearest supported step.</summary>
+    public void Normalize()
+    {
+        double nearest = SupportedWindows[0];
+        double minDist = Math.Abs(WindowSeconds - nearest);
+        foreach (double w in SupportedWindows)
+        {
+            double d = Math.Abs(WindowSeconds - w);
+            if (d < minDist) { minDist = d; nearest = w; }
+        }
+        WindowSeconds = nearest;
+    }
 }
 
 public sealed class OverlayConfig
@@ -60,6 +91,9 @@ public sealed class OverlayConfig
     /// </summary>
     public Dictionary<string, SavedLayout> SavedLayouts { get; set; } = new();
 
+    /// <summary>Chart widget settings. Null-safe default; absent from old config files loads as defaults.</summary>
+    public ChartConfig Chart { get; set; } = new();
+
     /// <summary>
     /// For each of the six <see cref="WidgetId"/> keys missing from <see cref="Widgets"/>,
     /// seeds from <see cref="LayoutSeeds.For(OverlayLayout)"/>.
@@ -67,6 +101,8 @@ public sealed class OverlayConfig
     /// </summary>
     public void Normalize(OverlayLayout layout)
     {
+        Chart.Normalize();
+
         var seeds = LayoutSeeds.For(layout);
 
         // Clamp scale on any pre-existing entries

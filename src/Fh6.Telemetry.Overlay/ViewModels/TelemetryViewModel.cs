@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using Fh6.Telemetry.Core;
 
+
 namespace Fh6.Telemetry.Overlay.ViewModels;
 
 public sealed class TelemetryViewModel : INotifyPropertyChanged
@@ -24,7 +25,14 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         return brush;
     }
 
+    // Ring-buffer capacity: 120 s max window × 60 Hz + headroom (~384 KB at ~48 B/sample).
+    private const int ChartCapacity = 8000;
+
     private int? _prevGear;
+    private bool _prevIsRaceOn;
+
+    /// <summary>Ring-buffer chart history, owned by the VM and fed on each <see cref="Update"/> call.</summary>
+    public ChartHistory History { get; } = new(ChartCapacity);
 
     // ── Discrete text / status (updated immediately in Update) ──────────────
     public string Speed { get; set; } = "0";
@@ -130,6 +138,13 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         Light3 = stage >= 3 ? OnLight3 : Off;
         Light4 = stage >= 4 ? OnLight4 : Off;
         Light5 = stage >= 5 ? OnLight5 : Off;
+
+        // Chart history: reset on the falling edge of IsRaceOn (menu/rewind), then sample.
+        if (_prevIsRaceOn && !r.IsRaceOn)
+            History.Reset();
+        if (r.IsRaceOn)
+            History.Add(r, r.TimestampMs);
+        _prevIsRaceOn = r.IsRaceOn;
 
         RaiseDiscrete();
     }
