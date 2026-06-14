@@ -96,6 +96,11 @@ export function createTransport({ playBtn, timeline, timeLabel, speedSelect }) {
     state.cursorCb = cb;
   }
 
+  // Current cursor time, so callers (arrow-key stepping) can find the active frame.
+  function getCursor() {
+    return state.curT;
+  }
+
   // ---- rAF loop --------------------------------------------------------------
 
   function tick(ts) {
@@ -140,5 +145,5 @@ export function createTransport({ playBtn, timeline, timeLabel, speedSelect }) {
   requestAnimationFrame(tick);
   setPlayBtn();
 
-  return { setRange, setCursor, seek, play, pause, toggle, onCursor };
+  return { setRange, setCursor, seek, play, pause, toggle, onCursor, getCursor };
 }

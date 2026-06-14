@@ -89,6 +89,7 @@ select {
   margin-bottom: 10px;
 }
 .metric { display: flex; flex-direction: column; }
+.metric.wide { grid-column: 1 / -1; }
 .metric .k { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 .metric .v { font-size: 15px; font-variant-numeric: tabular-nums; }
 
