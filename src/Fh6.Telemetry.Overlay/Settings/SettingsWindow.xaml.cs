@@ -11,6 +11,9 @@ public partial class SettingsWindow : Window
     private sealed record WidgetRow(CheckBox VisibleBox, Slider ScaleSlider, WidgetId Id);
     private readonly List<WidgetRow> _widgetRows = new();
 
+    private sealed record ChartSeriesRow(CheckBox EnabledBox, ChartSeriesId Id);
+    private readonly List<ChartSeriesRow> _chartSeriesRows = new();
+
     public SettingsWindow(OverlayConfig config)
     {
         InitializeComponent();
@@ -79,6 +82,24 @@ public partial class SettingsWindow : Window
             _widgetRows.Add(new WidgetRow(visibleBox, scaleSlider, id));
         }
 
+        // Chart: time-window combo
+        ChartWindowBox.ItemsSource = ChartConfig.SupportedWindows.Select(w => $"{(int)w} s").ToList();
+        var selectedWindowIdx = Array.IndexOf(ChartConfig.SupportedWindows, config.Chart.WindowSeconds);
+        ChartWindowBox.SelectedIndex = selectedWindowIdx >= 0 ? selectedWindowIdx : 1; // default 60 s
+
+        // Chart: per-series checkboxes
+        foreach (var def in ChartSeriesCatalog.All)
+        {
+            var cb = new CheckBox
+            {
+                Content = def.Name,
+                IsChecked = ChartSeriesCatalog.IsEnabled(config.Chart, def.Id),
+                Margin = new Thickness(0, 0, 0, 2),
+            };
+            ChartSeriesRows.Children.Add(cb);
+            _chartSeriesRows.Add(new ChartSeriesRow(cb, def.Id));
+        }
+
         RefreshSavedLayoutList();
     }
 
@@ -106,6 +127,15 @@ public partial class SettingsWindow : Window
             wc.Visible = row.VisibleBox.IsChecked == true;
             wc.Scale = Math.Clamp(row.ScaleSlider.Value, 0.5, 2.5);
         }
+
+        // Chart: write window selection back to config.
+        int winIdx = ChartWindowBox.SelectedIndex;
+        if (winIdx >= 0 && winIdx < ChartConfig.SupportedWindows.Length)
+            _config.Chart.WindowSeconds = ChartConfig.SupportedWindows[winIdx];
+
+        // Chart: write per-series enabled flags.
+        foreach (var row in _chartSeriesRows)
+            _config.Chart.Series[row.Id.ToString()] = row.EnabledBox.IsChecked == true;
     }
 
     private void RefreshSavedLayoutList()
