@@ -3,6 +3,29 @@
 Deferred features with enough detail to pick up later. Keep `main` green; build each on
 its own `feat/...` branch and merge `--no-ff` when done.
 
+## Gear-ratio readout widget
+
+**Goal:** show per-gear ratios (a top tuning aid).
+
+**Why deferred:** a *meaningful* readout is HH per `derived-metrics-research.md §9.1`. It
+needs `WheelRotationSpeed` (driven wheels, not currently exposed on `TelemetryReadout`),
+per-gear sample collection while `Clutch≈0` and slip is low, a linear fit
+`RPM = ratio·wheelSpeed` per `Gear`, and tire-radius handling to separate final-drive ×
+gear. A raw instantaneous `rpm/wheelSpeed` is noisy and unit-ambiguous, so shipping it
+would mislead. Deferred during the autonomous round rather than ship a bad number.
+
+**Approach when picked up:** expose `WheelRotationSpeed` on the readout; accumulate
+per-gear (gear → list of (wheelSpeed, rpm)) while clutch≈0 and `|TireSlipRatio|` low;
+least-squares fit slope per gear; display ratios + detected shift points. Persist the fit
+per car (keyed by `CarOrdinal`) so it survives restarts.
+
+**Effort:** L (per-gear calibration + persistence).
+
+## Car name from ordinal
+
+`CarOrdinal` is in the packet; map it to a car name for context (austinbaccus #55). Needs a
+maintained ordinal→name table. Effort: S–M. Nice-to-have.
+
 ## Capture storage: binary capture + analysis export
 
 **Goal:** replace/augment today's JSONL capture with a compact on-disk format, and an
