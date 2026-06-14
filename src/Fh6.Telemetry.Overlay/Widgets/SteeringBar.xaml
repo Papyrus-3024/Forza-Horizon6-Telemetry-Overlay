@@ -2,8 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              SizeChanged="OnSizeChanged">
-    <Canvas x:Name="Root" Height="6" Background="#1A2416" ClipToBounds="True">
-        <Rectangle x:Name="Fill" Height="6" Fill="#E8EEE6"/>
-        <Rectangle x:Name="CenterTick" Width="1" Height="6" Fill="#88FFFFFF"/>
+    <Canvas x:Name="Root" Height="7" Background="#1A2030" ClipToBounds="True">
+        <Rectangle x:Name="Fill" Height="7" Fill="{DynamicResource Fh6.Accent}"/>
+        <Rectangle x:Name="CenterTick" Width="1" Height="7" Fill="#88FFFFFF"/>
     </Canvas>
 </UserControl>
