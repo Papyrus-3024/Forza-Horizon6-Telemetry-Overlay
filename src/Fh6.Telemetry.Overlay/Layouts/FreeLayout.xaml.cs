@@ -23,6 +23,7 @@ public partial class FreeLayout : UserControl
     private readonly SpeedSlipstreamWidget _slipstreamWidget;
     private readonly ArcTachWidget         _arcTachWidget;
     private readonly PedalsSteerWidget     _pedalsWidget;
+    private readonly SuspensionWidget      _suspensionWidget;
 
     // Edit-mode state
     private bool _editMode;
@@ -48,6 +49,7 @@ public partial class FreeLayout : UserControl
         _slipstreamWidget = new SpeedSlipstreamWidget();
         _arcTachWidget    = new ArcTachWidget();
         _pedalsWidget     = new PedalsSteerWidget();
+        _suspensionWidget = new SuspensionWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
@@ -67,6 +69,7 @@ public partial class FreeLayout : UserControl
             [WidgetId.FuelArc]          = _fuelArcWidget,
             [WidgetId.SpeedSlipstream]  = _slipstreamWidget,
             [WidgetId.ArcTach]          = _arcTachWidget,
+            [WidgetId.Suspension]       = _suspensionWidget,
         };
 
         foreach (var w in _widgets.Values)
@@ -109,6 +112,12 @@ public partial class FreeLayout : UserControl
         Bind(_pedalsWidget, PedalsSteerWidget.ThrottleProperty, nameof(ViewModels.TelemetryViewModel.DisplayedThrottle));
         Bind(_pedalsWidget, PedalsSteerWidget.BrakeProperty,    nameof(ViewModels.TelemetryViewModel.DisplayedBrake));
         Bind(_pedalsWidget, PedalsSteerWidget.ClutchProperty,   nameof(ViewModels.TelemetryViewModel.DisplayedClutch));
+
+        // Bind SuspensionWidget DPs (per-corner normalized travel).
+        Bind(_suspensionWidget, SuspensionWidget.SuspFLProperty, nameof(ViewModels.TelemetryViewModel.SuspFL));
+        Bind(_suspensionWidget, SuspensionWidget.SuspFRProperty, nameof(ViewModels.TelemetryViewModel.SuspFR));
+        Bind(_suspensionWidget, SuspensionWidget.SuspRLProperty, nameof(ViewModels.TelemetryViewModel.SuspRL));
+        Bind(_suspensionWidget, SuspensionWidget.SuspRRProperty, nameof(ViewModels.TelemetryViewModel.SuspRR));
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;

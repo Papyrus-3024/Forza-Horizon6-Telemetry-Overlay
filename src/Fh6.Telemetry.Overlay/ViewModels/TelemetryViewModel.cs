@@ -93,6 +93,8 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private double _tireTempRL; private double _tireTempRR;
     private double _tireSlipFL; private double _tireSlipFR;
     private double _tireSlipRL; private double _tireSlipRR;
+    private double _suspFL; private double _suspFR;
+    private double _suspRL; private double _suspRR;
 
     // Tire temperatures (°F, one per corner)
     public double TireTempFL { get => _tireTempFL; set => _tireTempFL = value; }
@@ -105,6 +107,12 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public double TireSlipFR { get => _tireSlipFR; set => _tireSlipFR = value; }
     public double TireSlipRL { get => _tireSlipRL; set => _tireSlipRL = value; }
     public double TireSlipRR { get => _tireSlipRR; set => _tireSlipRR = value; }
+
+    // Normalized suspension travel per corner (0 = full droop/extended, 1 = full compression)
+    public double SuspFL { get => _suspFL; set => _suspFL = value; }
+    public double SuspFR { get => _suspFR; set => _suspFR = value; }
+    public double SuspRL { get => _suspRL; set => _suspRL = value; }
+    public double SuspRR { get => _suspRR; set => _suspRR = value; }
 
     // ── Shift lights ─────────────────────────────────────────────────────────
     private Brush _light1 = Off;
@@ -222,6 +230,11 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         SetDouble(ref _tireSlipFR, r.TireCombinedSlip.FrontRight, nameof(TireSlipFR));
         SetDouble(ref _tireSlipRL, r.TireCombinedSlip.RearLeft,   nameof(TireSlipRL));
         SetDouble(ref _tireSlipRR, r.TireCombinedSlip.RearRight,  nameof(TireSlipRR));
+
+        SetDouble(ref _suspFL, r.SuspensionTravelNorm.FrontLeft,  nameof(SuspFL));
+        SetDouble(ref _suspFR, r.SuspensionTravelNorm.FrontRight, nameof(SuspFR));
+        SetDouble(ref _suspRL, r.SuspensionTravelNorm.RearLeft,   nameof(SuspRL));
+        SetDouble(ref _suspRR, r.SuspensionTravelNorm.RearRight,  nameof(SuspRR));
 
         var shift = GearShifts.Detect(_prevGear, r.Gear);
         if (shift == ShiftDirection.Up)        SetStr(ref _lastShift, $"up -> {r.Gear}",   nameof(LastShift));

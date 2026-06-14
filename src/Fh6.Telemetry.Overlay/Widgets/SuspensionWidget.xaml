@@ -1,0 +1,122 @@
+<UserControl x:Class="Fh6.Telemetry.Overlay.Widgets.SuspensionWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             TextOptions.TextFormattingMode="Display">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="10,8">
+            <StackPanel>
+                <TextBlock Text="SUSPENSION"
+                           Foreground="{DynamicResource Fh6.TextLabel}" FontSize="9" FontFamily="Consolas"
+                           FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+
+                <!-- 3-column grid: FL | car | FR / RL | car | RR -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- FL -->
+                    <StackPanel Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center">
+                        <Grid Width="40" Height="34">
+                            <Border Background="#1A2416" CornerRadius="3"/>
+                            <!-- neutral ride reference line at mid -->
+                            <Rectangle Height="1" VerticalAlignment="Center" Fill="#33FFFFFF"/>
+                            <Border x:Name="BarFL" Width="40" CornerRadius="3" VerticalAlignment="Bottom" Height="0"/>
+                        </Grid>
+                        <TextBlock Text="FL" Foreground="{DynamicResource Fh6.TextLabel}"
+                                   FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Car silhouette -->
+                    <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+                            Width="20" Height="48" CornerRadius="10,10,7,7"
+                            VerticalAlignment="Center">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#33FFFFFF" Offset="0"/>
+                                <GradientStop Color="#0DFFFFFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.BorderBrush><SolidColorBrush Color="#22FFFFFF"/></Border.BorderBrush>
+                        <Border.BorderThickness>1</Border.BorderThickness>
+                    </Border>
+
+                    <!-- FR -->
+                    <StackPanel Grid.Column="4" Grid.Row="0" HorizontalAlignment="Center">
+                        <Grid Width="40" Height="34">
+                            <Border Background="#1A2416" CornerRadius="3"/>
+                            <Rectangle Height="1" VerticalAlignment="Center" Fill="#33FFFFFF"/>
+                            <Border x:Name="BarFR" Width="40" CornerRadius="3" VerticalAlignment="Bottom" Height="0"/>
+                        </Grid>
+                        <TextBlock Text="FR" Foreground="{DynamicResource Fh6.TextLabel}"
+                                   FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- RL -->
+                    <StackPanel Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center">
+                        <Grid Width="40" Height="34">
+                            <Border Background="#1A2416" CornerRadius="3"/>
+                            <Rectangle Height="1" VerticalAlignment="Center" Fill="#33FFFFFF"/>
+                            <Border x:Name="BarRL" Width="40" CornerRadius="3" VerticalAlignment="Bottom" Height="0"/>
+                        </Grid>
+                        <TextBlock Text="RL" Foreground="{DynamicResource Fh6.TextLabel}"
+                                   FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- RR -->
+                    <StackPanel Grid.Column="4" Grid.Row="2" HorizontalAlignment="Center">
+                        <Grid Width="40" Height="34">
+                            <Border Background="#1A2416" CornerRadius="3"/>
+                            <Rectangle Height="1" VerticalAlignment="Center" Fill="#33FFFFFF"/>
+                            <Border x:Name="BarRR" Width="40" CornerRadius="3" VerticalAlignment="Bottom" Height="0"/>
+                        </Grid>
+                        <TextBlock Text="RR" Foreground="{DynamicResource Fh6.TextLabel}"
+                                   FontSize="8" FontFamily="Consolas" FontWeight="Bold"
+                                   HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Legend: droop ↔ compression -->
+                <Grid Margin="0,7,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="DROOP" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="7" FontFamily="Consolas" FontWeight="Bold" Margin="0,0,4,0"/>
+                    <Border Grid.Column="1" Height="5" CornerRadius="2.5" VerticalAlignment="Center">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#4F95E0" Offset="0.0"/>
+                                <GradientStop Color="#2BBD74" Offset="0.5"/>
+                                <GradientStop Color="#EF4332" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <TextBlock Grid.Column="2" Text="BUMP" VerticalAlignment="Center"
+                               Foreground="{DynamicResource Fh6.TextLabel}"
+                               FontSize="7" FontFamily="Consolas" FontWeight="Bold" Margin="4,0,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

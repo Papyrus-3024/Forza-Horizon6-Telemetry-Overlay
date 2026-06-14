@@ -22,6 +22,10 @@ PutI 4   12345                   # TimestampMs
 PutF 8   8000                    # EngineMaxRpm
 PutF 12  900                     # EngineIdleRpm
 PutF 16  $Rpm                    # CurrentEngineRpm
+PutF 68  0.55                    # NormalizedSuspensionTravel FL
+PutF 72  0.48                    # FR
+PutF 76  0.40                    # RL
+PutF 80  0.92                    # RR (near bottomed -> red)
 PutF 256 ([single]($SpeedMph / 2.23694))  # Speed m/s
 PutF 260 280000                  # Power (W)
 PutF 264 480                     # Torque

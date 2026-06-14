@@ -18,4 +18,5 @@ public enum WidgetId
     FuelArc,
     SpeedSlipstream,
     ArcTach,
+    Suspension,
 }
