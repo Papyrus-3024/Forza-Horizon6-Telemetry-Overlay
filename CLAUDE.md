@@ -36,4 +36,17 @@ Do not leave an AI/LLM footprint in the git history or the code:
 
 ## Stack
 - .NET 8 console app, C#. Dashboard + CLI via Spectre.Console.
+- WPF overlay (`Fh6.Telemetry.Overlay`, `net8.0-windows`) reusing the Core parser/sources.
 - Tests: xUnit, with golden-value assertions against trimmed capture fixtures.
+
+## Overlay (WPF) gotchas — read before changing the overlay
+- **Bound view-model properties MUST have a public setter.** WPF binds `RangeBase.Value`
+  (ProgressBar) and `Run.Text` TwoWay by default, so a get-only / `private set` property
+  crashes the window at startup ("A TwoWay or OneWayToSource binding cannot work on the
+  read-only property…"). This has regressed 3×. Keep `{ get; set; }` (raise change
+  notifications via helpers, not by removing the setter), or set `Mode=OneWay` on the binding.
+- **Always RUN the overlay after VM/XAML changes — tests don't catch XAML/binding errors.**
+  `dotnet run --project src/Fh6.Telemetry.Overlay` (live) or `-- --replay <file>`. To verify
+  headless, launch the exe and capture the screen via PowerShell `System.Drawing.CopyFromScreen`.
+- Text under an `Effect` (e.g. DropShadowEffect) loses ClearType and looks blurry — keep
+  effects off text; the window sets `TextFormattingMode=Display`.
