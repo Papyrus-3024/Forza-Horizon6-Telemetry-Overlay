@@ -1,0 +1,9 @@
+node_modules/
+
+# Large seasonal map images are served locally but not committed.
+public/maps/*.avif
+
+# Bundled captures are git-ignored by default; the small sample is committed
+# explicitly (git add -f captures/sample-drive.jsonl).
+captures/*.jsonl
+!captures/sample-drive.jsonl

@@ -1,0 +1,12 @@
+{
+  "name": "fh6-web-replay",
+  "version": "1.0.0",
+  "description": "Top-down FH6 telemetry capture replay over the world map",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
