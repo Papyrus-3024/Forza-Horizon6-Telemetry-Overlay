@@ -9,9 +9,9 @@ using Spectre.Console.Cli;
 namespace Fh6.Telemetry.Cli.Commands;
 
 /// <summary>
-/// Connection diagnostics: binds the Data Out port, samples for a few seconds, reports
-/// packets/sec and packet validity, and prints the UWP/Store loopback fix — the single
-/// most-cited Forza-PC setup pain (see qol-research.md #1/#2).
+/// Connection diagnostics: binds the Data Out port, samples for a few seconds, and reports
+/// packets/sec and packet validity. If nothing arrives, prints the manual checklist (the
+/// remaining causes are game-side and not testable from here).
 /// </summary>
 public sealed class DoctorCommand : Command<DoctorCommand.Settings>
 {
@@ -41,7 +41,6 @@ public sealed class DoctorCommand : Command<DoctorCommand.Settings>
         {
             AnsiConsole.MarkupLine($"[red]Cannot bind port {settings.Port}:[/] {ex.Message}");
             AnsiConsole.MarkupLine("[yellow]Another app is probably already listening (close other overlays/SimHub), or the port is reserved.[/]");
-            PrintLoopbackHelp();
             return 1;
         }
 
@@ -70,9 +69,9 @@ public sealed class DoctorCommand : Command<DoctorCommand.Settings>
             AnsiConsole.MarkupLine("[red]No packets received.[/]");
             AnsiConsole.MarkupLine("Checklist:");
             AnsiConsole.MarkupLine("  • FH6 → Settings → HUD and Gameplay → Data Out = [bold]ON[/]");
-            AnsiConsole.MarkupLine($"  • Data Out IP points at THIS pc ([bold]127.0.0.1[/] if same machine), port = [bold]{settings.Port}[/]");
+            AnsiConsole.MarkupLine($"  • Game Data Out IP = [bold]127.0.0.1[/] (same PC), overlay listen = [bold]0.0.0.0[/], port = [bold]{settings.Port}[/]");
             AnsiConsole.MarkupLine("  • Data is only sent while [bold]actively driving[/] (not menus/pause/replay)");
-            PrintLoopbackHelp();
+            AnsiConsole.MarkupLine("  • No other app is bound to the port");
             return 2;
         }
 
@@ -83,13 +82,5 @@ public sealed class DoctorCommand : Command<DoctorCommand.Settings>
             AnsiConsole.MarkupLine($"[yellow]{valid}/{packets} packets were {PacketParser.PacketSize} bytes[/] — wrong size suggests a different game/format on this port.");
 
         return 0;
-    }
-
-    private static void PrintLoopbackHelp()
-    {
-        AnsiConsole.MarkupLine("\n[bold]If FH6 is the Microsoft Store / Game Pass (UWP) build[/] and the game is on this same PC,");
-        AnsiConsole.MarkupLine("UWP apps are sandboxed from localhost. Run this once in an [bold]admin[/] PowerShell:");
-        AnsiConsole.MarkupLine("  [grey]CheckNetIsolation LoopbackExempt -a -n=\"Microsoft.624F8B84B80_8wekyb3d8bbwe\"[/]");
-        AnsiConsole.MarkupLine("[grey](package name varies by title; `CheckNetIsolation LoopbackExempt -s` lists exemptions.)[/]");
     }
 }

@@ -66,6 +66,13 @@ public sealed class OverlayConfig
     public double? FlyoutX { get; set; }
     public double? FlyoutY { get; set; }
 
+    /// <summary>Auto-persist every live session (off = only explicitly-saved sessions are kept).</summary>
+    public bool AlwaysSaveSessions { get; set; }
+    /// <summary>Which formats the "Save current session" button produces.</summary>
+    public bool SaveJsonl { get; set; } = true;
+    public bool SaveCsv { get; set; }
+    public bool SaveBin { get; set; }
+
     /// <summary>Name of the active color preset. Defaults to "DarkGlass".</summary>
     public string ThemePreset { get; set; } = "DarkGlass";
 

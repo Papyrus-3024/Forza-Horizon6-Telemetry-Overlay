@@ -30,6 +30,10 @@ public sealed class TelemetryPump : IDisposable
     private long _ppsWindowStartMs;
     private int _ppsCount;
 
+    /// <summary>Optional sink for every raw frame received (e.g. the session recorder).
+    /// Invoked on the pump thread, before parsing, so even unparseable datagrams are captured.</summary>
+    public Action<CaptureFrame>? OnFrame { get; set; }
+
     public TelemetryPump(
         ITelemetrySource source,
         TelemetryViewModel viewModel,
@@ -91,6 +95,8 @@ public sealed class TelemetryPump : IDisposable
                     var line = $"{pps:F0} pkt/s · {_diagLabel}";
                     _dispatcher.BeginInvoke(() => _viewModel.SetDiagnostics(line));
                 }
+
+                OnFrame?.Invoke(frame);
 
                 if (_honorTiming && prevT is double previous)
                 {
