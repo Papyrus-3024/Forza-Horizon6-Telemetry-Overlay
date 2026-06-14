@@ -24,7 +24,11 @@ node_modules/
 # Raw telemetry captures (large; not source). Trimmed test fixtures live under the test project.
 /capture-*.jsonl
 
-# Visual brainstorm companion
+# Development-only artifacts (design docs, mockups, backlog, scratch notes).
+# Kept on disk for development; not part of the shipped/source release.
+/dev/
+/CLAUDE.md
+.claude/
 .superpowers/
 
 # Dropped screenshots (read, not versioned)

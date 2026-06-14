@@ -92,7 +92,7 @@ dotnet test                    # run the test suite
 - `src/Fh6.Telemetry.Overlay` — WPF overlay HUD.
 - `tests/` — xUnit tests (golden-value assertions against trimmed capture fixtures).
 - `web/` — map-replay web app (WIP; not in the release).
-- `FH6_DATA_OUT_DOC.md` — packet format. `BACKLOG.md` — deferred work.
+- `FH6_DATA_OUT_DOC.md` — packet format reference.
 
 ## Packet
 Fixed **324 bytes**, little-endian. Documented fields occupy bytes 0–322; byte 323 is
