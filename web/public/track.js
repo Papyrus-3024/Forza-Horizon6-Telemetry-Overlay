@@ -219,6 +219,10 @@ export function createTrack(canvas) {
       lastX = e.clientX; lastY = e.clientY;
       draw();
     });
+    // Double-click resets to the auto-fit view. A dblclick also fires a preceding
+    // mousedown/mouseup pair, but with no intervening mousemove that leaves pan
+    // unchanged, so the two interactions coexist without a guard.
+    canvas.addEventListener('dblclick', () => resetView());
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const rect = canvas.getBoundingClientRect();
@@ -270,8 +274,14 @@ export function createTrack(canvas) {
     draw();
   }
 
+  function resetView() {
+    state.view = { panX: 0, panY: 0, zoom: 1 };
+    autoFit();
+    draw();
+  }
+
   resize();
   bindPanZoom();
 
-  return { setFrames, setCursor, setMap, resize };
+  return { setFrames, setCursor, setMap, resetView, resize };
 }

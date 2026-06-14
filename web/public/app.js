@@ -22,6 +22,7 @@ const transport = createTransport({
 const app = {
   frames: [],
   laps: [],
+  bestLapIndex: -1,
 };
 
 // ---- Wiring ----------------------------------------------------------------
@@ -37,14 +38,35 @@ transport.onCursor((t) => {
 // A chart click/drag is a user seek.
 charts.onSeek((t) => transport.seek(t));
 
-// Spacebar toggles play unless the user is typing in a control.
+// Keyboard transport: Space toggles play; Left/Right step one frame. All ignored
+// while typing in a control so they don't hijack form input.
 window.addEventListener('keydown', (e) => {
-  if (e.code !== 'Space') return;
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'select' || tag === 'textarea') return;
-  e.preventDefault();
-  transport.toggle();
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    transport.toggle();
+  } else if (e.code === 'ArrowLeft') {
+    e.preventDefault();
+    stepFrame(-1);
+  } else if (e.code === 'ArrowRight') {
+    e.preventDefault();
+    stepFrame(1);
+  }
 });
+
+// Move the cursor to the neighbouring frame. frameAt gives the current frame for
+// the cursor time; we find its index and seek to the adjacent frame's t, clamped.
+function stepFrame(dir) {
+  const fs = app.frames;
+  if (!fs.length) return;
+  const cur = frameAt(fs, transport.getCursor());
+  let idx = cur ? fs.indexOf(cur) : 0;
+  if (idx < 0) idx = 0;
+  const next = Math.max(0, Math.min(fs.length - 1, idx + dir));
+  transport.seek(fs[next].t);
+}
 
 window.addEventListener('resize', () => {
   track.resize();
@@ -55,13 +77,14 @@ window.addEventListener('resize', () => {
 
 function loadFrames(frames, label) {
   app.frames = frames || [];
-  const { laps } = computeLaps(app.frames);
+  const { laps, bestLapIndex } = computeLaps(app.frames);
   app.laps = laps;
+  app.bestLapIndex = bestLapIndex;
 
   track.setFrames(app.frames);
   charts.setFrames(app.frames);
   charts.setLaps(app.laps);
-  buildLapSelector(app.laps);
+  buildLapSelector(app.laps, app.bestLapIndex);
 
   const startT = app.frames.length ? app.frames[0].t : 0;
   const endT = app.frames.length ? app.frames[app.frames.length - 1].t : 0;
@@ -138,7 +161,7 @@ function bindCaptureControls() {
 
 // ---- Lap selector ----------------------------------------------------------
 
-function buildLapSelector(laps) {
+function buildLapSelector(laps, bestLapIndex = -1) {
   const sel = $('lapSelect');
   if (!sel) return;
   sel.innerHTML = '';
@@ -151,6 +174,7 @@ function buildLapSelector(laps) {
     opt.value = String(lap.index);
     const secs = (lap.durationMs / 1000).toFixed(1);
     opt.textContent = `Lap ${lap.lapNumber} — ${secs}s`;
+    if (bestLapIndex >= 0 && lap.index === bestLapIndex) opt.textContent += ' · best';
     sel.appendChild(opt);
   }
 }
@@ -170,6 +194,9 @@ function bindLapSelector() {
 // Remote FH6 map images, keyed by the map-style selector. The seasonal maps are
 // the full-island top-down renders; "road" is an alternative Google-style road
 // map (incomplete — see the calibration TODO in track.js).
+// decision: keep the seasonal entries but hide them in the UI for now — reason:
+// they're large ~53 MB AVIFs that don't load well and aren't coordinate-aligned;
+// re-enable later by re-adding their <option>s in index.html.
 const MAP_SOURCES = {
   spring: 'https://cdn.leox.dev/fh6/map/spring.avif',
   summer: 'https://cdn.leox.dev/fh6/map/summer.avif',
@@ -182,9 +209,11 @@ const MAP_SOURCES = {
 // request finishing after a newer pick must not clobber the current map.
 function loadMap() {
   const sel = $('mapSelect');
+  const hint = $('mapHint');
   let token = 0;
   const apply = (style) => {
     const url = MAP_SOURCES[style];
+    if (hint) hint.hidden = !url; // only warn about alignment when a real map shows
     if (!url) {
       track.setMap(null);
       return;

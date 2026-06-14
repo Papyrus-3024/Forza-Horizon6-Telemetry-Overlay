@@ -16,6 +16,12 @@ function fmt(v, digits) {
   return v === null ? DASH : v.toFixed(digits);
 }
 
+// Lap times arrive as float seconds; 0 means none/unset. Show "31.2s" or the dash.
+function fmtLapTime(secs) {
+  const s = num(secs);
+  return s === null || s <= 0 ? DASH : `${s.toFixed(1)}s`;
+}
+
 // decision: gear 0 -> "R", gear 1 with rpm near idle isn't reliably "neutral" in
 // FH6 (it has no distinct N code), so only map 0->R and show the raw number
 // otherwise; this matches the in-game HUD where 1 is first gear.
@@ -31,8 +37,10 @@ export function createReadout(root) {
   const grid = document.createElement("div");
   grid.className = "readout";
 
+  // [label, key, modifier?] — "wide" spans the full grid width so the combined
+  // km/h · mph speed string fits on one line in the 300px sidebar.
   const metrics = [
-    ["Speed", "speed"],
+    ["Speed", "speed", "wide"],
     ["Gear", "gear"],
     ["RPM", "rpm"],
     ["Throttle", "throttle"],
@@ -41,6 +49,8 @@ export function createReadout(root) {
     ["Boost", "boost"],
     ["Fuel", "fuel"],
     ["Lap", "lap"],
+    ["Best lap", "bestLap"],
+    ["Last lap", "lastLap"],
     ["Position", "pos"],
     ["World X/Z", "world"],
     ["Lat G", "latG"],
@@ -48,9 +58,9 @@ export function createReadout(root) {
   ];
 
   const v = {};
-  for (const [label, key] of metrics) {
+  for (const [label, key, mod] of metrics) {
     const cell = document.createElement("div");
-    cell.className = "metric";
+    cell.className = mod ? `metric ${mod}` : "metric";
     const k = document.createElement("span");
     k.className = "k";
     k.textContent = label;
@@ -120,6 +130,9 @@ export function createReadout(root) {
 
     const lapNumber = num(frame.lapNumber);
     v.lap.textContent = lapNumber === null ? DASH : String(lapNumber);
+
+    v.bestLap.textContent = fmtLapTime(frame.bestLap);
+    v.lastLap.textContent = fmtLapTime(frame.lastLap);
 
     const racePos = num(frame.racePos);
     v.pos.textContent = racePos === null ? DASH : `P${racePos}`;

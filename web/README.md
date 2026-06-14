@@ -51,13 +51,17 @@ paths work out of the box. Other captures dropped in `web/captures/` are git-ign
 
 ## World map
 
-The **Map** > **Style** selector picks the backdrop drawn under the path. The four
-seasonal FH6 maps (Spring/Summer/Autumn/Winter) and an alternative "Road
-(Google-style)" map are loaded from remote URLs (see `MAP_SOURCES` in `app.js`), so
-no local assets are needed and nothing large is committed. If an image fails to
-load the path falls back to a neutral grid. The backdrop is fitted/centered and
-pans/zooms in lockstep with the path; it is not yet georeferenced to true world
-coordinates — see the calibration `TODO` in `track.js`.
+The path-only plot is the default. The **Map** > **Style** selector can switch in an
+optional **FH6 map** backdrop (loaded from a remote URL — see `MAP_SOURCES` in
+`app.js`), so no local assets are needed and nothing large is committed. If the image
+fails to load the path falls back to a neutral grid.
+
+The backdrop is fitted/centered and pans/zooms in lockstep with the path, but it is
+**not georeferenced** to true world coordinates — the driving line won't sit on the
+real roads (a hint under the selector notes this). See the calibration `TODO` in
+`track.js`. The four seasonal FH6 maps (Spring/Summer/Autumn/Winter) stay in
+`MAP_SOURCES` but are hidden from the selector for now: the AVIFs are ~53 MB each and
+load poorly. Re-enable them by re-adding their `<option>`s in `index.html`.
 
 ## Packet format
 

@@ -180,6 +180,26 @@ test('computeLaps splits on lapNumber increments', () => {
   assert.equal(bestLapIndex, 0);
 });
 
+test('computeLaps picks the shortest completed lap and excludes the final lap', () => {
+  // lapNumbers: 0,0 (300ms) | 1,1 (120ms, shortest) | 2,2 (200ms) | 3 (final, incomplete)
+  const frames = [
+    { t: 0, lapNumber: 0 },
+    { t: 300, lapNumber: 0 },
+    { t: 420, lapNumber: 1 },
+    { t: 540, lapNumber: 1 },
+    { t: 620, lapNumber: 2 },
+    { t: 820, lapNumber: 2 },
+    { t: 900, lapNumber: 3 }, // trailing/incomplete lap, must not be eligible
+  ];
+  const { laps, bestLapIndex } = computeLaps(frames);
+  assert.equal(laps.length, 4);
+  assert.equal(laps[1].durationMs, 120); // the shortest completed lap
+  assert.equal(bestLapIndex, 1);
+  // The final lap is excluded even though its 0ms duration would otherwise win.
+  assert.equal(laps[3].durationMs, 0);
+  assert.notEqual(bestLapIndex, 3);
+});
+
 test('computeLaps on empty input', () => {
   const { laps, bestLapIndex } = computeLaps([]);
   assert.deepEqual(laps, []);
