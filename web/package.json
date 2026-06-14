@@ -4,7 +4,8 @@
   "description": "Top-down FH6 telemetry capture replay over the world map",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
