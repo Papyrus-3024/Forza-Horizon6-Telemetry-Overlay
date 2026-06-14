@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FH6 Telemetry Replay</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <h1>FH6 Replay</h1>
+
+      <section class="panel">
+        <h2>Capture</h2>
+        <label class="row">
+          <span>Bundled</span>
+          <select id="captureSelect"><option value="">— none —</option></select>
+        </label>
+        <label class="row">
+          <span>From file</span>
+          <input type="file" id="fileInput" accept=".jsonl,.json,.txt" />
+        </label>
+        <div id="captureInfo" class="hint">No capture loaded.</div>
+      </section>
+
+      <section class="panel">
+        <h2>Map</h2>
+        <label class="row">
+          <span>Season</span>
+          <select id="seasonSelect">
+            <option value="spring">Spring</option>
+            <option value="summer">Summer</option>
+            <option value="autumn">Autumn</option>
+            <option value="winter">Winter</option>
+          </select>
+        </label>
+        <div id="mapNote" class="hint"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Telemetry</h2>
+        <div class="readout">
+          <div class="metric"><span class="k">Speed</span><span class="v" id="mSpeed">—</span></div>
+          <div class="metric"><span class="k">Gear</span><span class="v" id="mGear">—</span></div>
+          <div class="metric"><span class="k">RPM</span><span class="v" id="mRpm">—</span></div>
+          <div class="metric"><span class="k">Throttle</span><span class="v" id="mThrottle">—</span></div>
+          <div class="metric"><span class="k">Brake</span><span class="v" id="mBrake">—</span></div>
+          <div class="metric"><span class="k">Steer</span><span class="v" id="mSteer">—</span></div>
+          <div class="metric"><span class="k">Race on</span><span class="v" id="mRaceOn">—</span></div>
+          <div class="metric"><span class="k">World X/Z</span><span class="v" id="mPos">—</span></div>
+        </div>
+        <div class="bar"><div class="bar-fill throttle" id="barThrottle"></div></div>
+        <div class="bar"><div class="bar-fill brake" id="barBrake"></div></div>
+        <div class="bar"><div class="bar-fill rpm" id="barRpm"></div></div>
+      </section>
+
+      <section class="panel">
+        <h2>Calibration</h2>
+        <p class="hint">Auto-fit frames the path. Nudge these to line it up on the map by eye.</p>
+        <label class="slider"><span>Scale <b id="vScale">1.00</b></span>
+          <input type="range" id="cScale" min="0.2" max="5" step="0.01" value="1" /></label>
+        <label class="slider"><span>Offset X <b id="vOffX">0</b></span>
+          <input type="range" id="cOffX" min="-2000" max="2000" step="1" value="0" /></label>
+        <label class="slider"><span>Offset Y <b id="vOffY">0</b></span>
+          <input type="range" id="cOffY" min="-2000" max="2000" step="1" value="0" /></label>
+        <label class="slider"><span>Rotation° <b id="vRot">0</b></span>
+          <input type="range" id="cRot" min="-180" max="180" step="0.5" value="0" /></label>
+        <label class="checkbox"><input type="checkbox" id="cFlipZ" /> Flip Z axis</label>
+        <button id="btnRefit" class="btn">Re-auto-fit</button>
+        <button id="btnResetCal" class="btn">Reset nudge</button>
+      </section>
+    </aside>
+
+    <main id="stage">
+      <canvas id="canvas"></canvas>
+      <div id="canvasHint" class="overlay-hint">Load a capture to begin. Drag to pan, scroll to zoom.</div>
+    </main>
+
+    <footer id="controls">
+      <button id="btnPlay" class="btn play">▶</button>
+      <input type="range" id="timeline" min="0" max="1000" step="1" value="0" />
+      <span id="timeLabel" class="mono">0.0s / 0.0s</span>
+      <label class="speed">Speed
+        <select id="speedSelect">
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+          <option value="4">4×</option>
+          <option value="8">8×</option>
+        </select>
+      </label>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
