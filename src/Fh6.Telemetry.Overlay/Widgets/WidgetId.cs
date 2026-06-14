@@ -11,4 +11,5 @@ public enum WidgetId
     GForce,
     PowerTorque,
     Chart,
+    Tire,
 }

@@ -123,6 +123,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private double _targetSteer;
     private double _targetGLat;
     private double _targetGLong;
+    private double _targetBoostRaw;   // raw psi value (can be negative for vacuum)
+    private double _targetPowerRaw;   // hp, clamped >=0
+    private double _targetTorqueRaw;  // lb·ft, clamped >=0
 
     // ── Displayed (smoothed) values — bound by widgets ──────────────────────
     // Bars and dot read these; they lag the targets by the easing factor.
@@ -133,6 +136,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private double _displayedSteer;
     private double _displayedGLat;
     private double _displayedGLong;
+    private double _displayedBoostRaw;
+    private double _displayedPowerRaw;
+    private double _displayedTorqueRaw;
 
     public double DisplayedRpmFraction { get => _displayedRpmFraction; set => _displayedRpmFraction = value; }
     public double DisplayedThrottle    { get => _displayedThrottle;    set => _displayedThrottle = value; }
@@ -141,6 +147,12 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public double DisplayedSteer       { get => _displayedSteer;       set => _displayedSteer = value; }
     public double DisplayedGLat        { get => _displayedGLat;        set => _displayedGLat = value; }
     public double DisplayedGLong       { get => _displayedGLong;       set => _displayedGLong = value; }
+    /// <summary>Eased boost pressure in psi (may be negative for vacuum).</summary>
+    public double DisplayedBoostRaw    { get => _displayedBoostRaw;    set => _displayedBoostRaw = value; }
+    /// <summary>Eased engine power in hp (clamped ≥ 0), range 0..1500.</summary>
+    public double DisplayedPowerRaw    { get => _displayedPowerRaw;    set => _displayedPowerRaw = value; }
+    /// <summary>Eased engine torque in lb·ft (clamped ≥ 0), range 0..1200.</summary>
+    public double DisplayedTorqueRaw   { get => _displayedTorqueRaw;   set => _displayedTorqueRaw = value; }
 
     // Legacy read-only pass-throughs kept so GForceWidget DP bindings still compile.
     // The code-behind that drives the dot should bind to DisplayedGLat/GLong instead.
@@ -169,6 +181,9 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         _targetSteer       = r.SteerFraction;
         _targetGLat        = r.LatG;
         _targetGLong       = r.LongG;
+        _targetBoostRaw    = r.Boost;
+        _targetPowerRaw    = r.PowerHp;
+        _targetTorqueRaw   = r.TorqueLbFt;
 
         SetStr(ref _throttlePct, $"{r.ThrottleFraction * 100:F0}", nameof(ThrottlePct));
         SetStr(ref _brakePct,    $"{r.BrakeFraction * 100:F0}",    nameof(BrakePct));
@@ -240,6 +255,10 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         // GLat/GLong are pass-through aliases; notify only if the underlying values changed.
         if (gLatChanged)  PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GLat)));
         if (gLongChanged) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GLong)));
+
+        EaseAndRaise(ref _displayedBoostRaw,  _targetBoostRaw,  alpha, nameof(DisplayedBoostRaw));
+        EaseAndRaise(ref _displayedPowerRaw,  _targetPowerRaw,  alpha, nameof(DisplayedPowerRaw));
+        EaseAndRaise(ref _displayedTorqueRaw, _targetTorqueRaw, alpha, nameof(DisplayedTorqueRaw));
     }
 
     /// <summary>Sets a status line (e.g. a telemetry-source error) and notifies the UI.</summary>

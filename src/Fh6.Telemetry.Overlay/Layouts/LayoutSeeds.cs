@@ -23,8 +23,9 @@ public static class LayoutSeeds
 
     // BottomStrip: compact horizontal row at Y=8, ~8px gaps between widgets.
     // Approximate rendered widths after v2 size bump (CornerRadius=10, larger fonts):
-    //   Gear ~82, Speed ~116, RpmShift ~194, PedalsSteer ~98, Boost ~100, LapTiming ~166, GForce ~104, PowerTorque ~112
+    //   Gear ~82, Speed ~116, RpmShift ~194, PedalsSteer ~98, Boost ~130, LapTiming ~166, GForce ~104, PowerTorque ~200, Tire ~154
     // Chart (~320x180) placed off to the right, hidden by default.
+    // Tire placed immediately after the chart, hidden by default (shown in CornerPanel).
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> BottomStrip =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -33,10 +34,11 @@ public static class LayoutSeeds
             [WidgetId.RpmShift]    = new(222,   8),
             [WidgetId.PedalsSteer] = new(424,   8),
             [WidgetId.Boost]       = new(530,   8),
-            [WidgetId.LapTiming]   = new(638,   8),
-            [WidgetId.GForce]      = new(812,   8),
-            [WidgetId.PowerTorque] = new(924,   8),
-            [WidgetId.Chart]       = new(1044,  8, Visible: false),
+            [WidgetId.LapTiming]   = new(668,   8),
+            [WidgetId.GForce]      = new(842,   8),
+            [WidgetId.PowerTorque] = new(954,   8),
+            [WidgetId.Chart]       = new(1162,  8, Visible: false),
+            [WidgetId.Tire]        = new(1162,  8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -45,7 +47,8 @@ public static class LayoutSeeds
     // Row 3 (Y=196): PedalsSteer | Boost (side by side; PedalsSteer ~98px wide)
     // Row 4 (Y=316): LapTiming
     // Row 5 (Y=448): GForce | PowerTorque
-    // Chart (~320x180) below the cluster, hidden by default.
+    // Row 6 (Y=570): Tire
+    // Chart below the cluster, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CornerPanel =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -57,12 +60,13 @@ public static class LayoutSeeds
             [WidgetId.LapTiming]   = new(  8, 316),
             [WidgetId.GForce]      = new(  8, 448),
             [WidgetId.PowerTorque] = new(120, 448),
-            [WidgetId.Chart]       = new(  8, 570, Visible: false),
+            [WidgetId.Tire]        = new(  8, 570),
+            [WidgetId.Chart]       = new(  8, 720, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
     // PedalsSteer left of center, RpmShift above Gear/Speed, LapTiming right of center.
-    // Non-essential widgets hidden. Chart placed below the main cluster, hidden by default.
+    // Non-essential widgets hidden. Chart and Tire placed below, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -74,6 +78,7 @@ public static class LayoutSeeds
             [WidgetId.Boost]       = new(860,  900, Visible: false),
             [WidgetId.GForce]      = new(860,  990, Visible: false),
             [WidgetId.PowerTorque] = new(972,  990, Visible: false),
+            [WidgetId.Tire]        = new(1180, 900, Visible: false),
             [WidgetId.Chart]       = new(640,  900, Visible: false),
         };
 }
