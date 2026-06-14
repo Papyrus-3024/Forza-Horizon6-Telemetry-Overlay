@@ -55,6 +55,7 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private string _bestLap    = "--:--.---";
     private string _lastShift  = "-";
     private string _status     = "";
+    private string _diagnostics = "waiting for data…";
 
     // Public setters exist only so WPF's TwoWay-default bindings (Run.Text, RangeBase.Value)
     // are legal; display controls never write back. Change-notification happens in the Set* helpers.
@@ -77,6 +78,8 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public string BestLap     { get => _bestLap;    set => _bestLap = value; }
     public string LastShift   { get => _lastShift;  set => _lastShift = value; }
     public string Status      { get => _status;     set => _status = value; }
+    // Live connection diagnostics line (packets/sec + port), shown in the settings flyout.
+    public string Diagnostics { get => _diagnostics; set => _diagnostics = value; }
 
     // ── Fuel fraction (0..1) for arc gauge ──────────────────────────────────
     private double _fuelFraction;
@@ -289,6 +292,12 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public void SetStatus(string status)
     {
         SetStr(ref _status, status, nameof(Status));
+    }
+
+    /// <summary>Sets the live diagnostics line (packets/sec + port). Called ~1 Hz by the pump.</summary>
+    public void SetDiagnostics(string diagnostics)
+    {
+        SetStr(ref _diagnostics, diagnostics, nameof(Diagnostics));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

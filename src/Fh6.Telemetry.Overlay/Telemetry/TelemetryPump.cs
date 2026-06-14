@@ -17,6 +17,7 @@ public sealed class TelemetryPump : IDisposable
     private readonly Dispatcher _dispatcher;
     private readonly bool _honorTiming;
     private readonly double _speed;
+    private readonly string _diagLabel;
     private readonly Thread _thread;
     private readonly object _gate = new();
     private TelemetryReadout _latest;
@@ -25,18 +26,24 @@ public sealed class TelemetryPump : IDisposable
     private long _received;
     private Timer? _watchdog;
 
+    // Rolling packets/sec window (computed on the pump thread, posted to the VM ~1 Hz).
+    private long _ppsWindowStartMs;
+    private int _ppsCount;
+
     public TelemetryPump(
         ITelemetrySource source,
         TelemetryViewModel viewModel,
         Dispatcher dispatcher,
         bool honorTiming = false,
-        double speed = 1.0)
+        double speed = 1.0,
+        string diagnosticsLabel = "")
     {
         _source = source;
         _viewModel = viewModel;
         _dispatcher = dispatcher;
         _honorTiming = honorTiming;
         _speed = speed <= 0 ? 1.0 : speed;
+        _diagLabel = diagnosticsLabel;
         _thread = new Thread(Run) { IsBackground = true, Name = "TelemetryPump" };
     }
 
@@ -65,9 +72,25 @@ public sealed class TelemetryPump : IDisposable
 
                 var count = Interlocked.Increment(ref _received);
                 if (count == 1)
+                {
                     OverlayLog.Write($"first packet received ({frame.Data.Length} bytes)");
+                    _ppsWindowStartMs = Environment.TickCount64;
+                }
                 else if (count % 600 == 0)
                     OverlayLog.Write($"received {count} packets");
+
+                // Rolling packets/sec, posted to the VM about once a second.
+                _ppsCount++;
+                long nowMs = Environment.TickCount64;
+                long elapsed = nowMs - _ppsWindowStartMs;
+                if (elapsed >= 1000)
+                {
+                    double pps = _ppsCount * 1000.0 / elapsed;
+                    _ppsCount = 0;
+                    _ppsWindowStartMs = nowMs;
+                    var line = $"{pps:F0} pkt/s · {_diagLabel}";
+                    _dispatcher.BeginInvoke(() => _viewModel.SetDiagnostics(line));
+                }
 
                 if (_honorTiming && prevT is double previous)
                 {

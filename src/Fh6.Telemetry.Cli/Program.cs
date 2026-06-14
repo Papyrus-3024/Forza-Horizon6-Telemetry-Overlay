@@ -11,6 +11,8 @@ app.Configure(config =>
         .WithDescription("Replay a capture file to the dashboard.");
     config.AddCommand<ExportCommand>("export")
         .WithDescription("Export a JSONL capture to CSV for analysis (e.g. pandas).");
+    config.AddCommand<DoctorCommand>("doctor")
+        .WithDescription("Diagnose the UDP connection (packets/sec, validity, UWP loopback help).");
     config.AddCommand<LiveCommand>("live")
         .WithDescription("Show the live telemetry dashboard from UDP.");
 });
