@@ -14,17 +14,30 @@
             <TextBlock Text="PEDALS"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
                        FontWeight="Bold" Margin="0,0,0,5"/>
-            <!-- Vertical bars — throttle=green, brake=red, clutch=blue (semantic, kept hardcoded) -->
+            <!-- Vertical bars — throttle=green, brake=red, clutch=blue (semantic, kept hardcoded).
+                 Each pedal: trough + a faint peak-hold ghost + a glowing value fill (code-behind). -->
             <StackPanel Orientation="Horizontal" Height="56" VerticalAlignment="Bottom">
-                <ProgressBar Width="16" Margin="2,0" Orientation="Vertical" Minimum="0" Maximum="1"
-                             Value="{Binding DisplayedThrottle, Mode=OneWay}"
-                             Foreground="#5AD15A" Background="#1A2416" BorderThickness="0"/>
-                <ProgressBar Width="16" Margin="2,0" Orientation="Vertical" Minimum="0" Maximum="1"
-                             Value="{Binding DisplayedBrake, Mode=OneWay}"
-                             Foreground="#E05A5A" Background="#1A2416" BorderThickness="0"/>
-                <ProgressBar Width="16" Margin="2,0" Orientation="Vertical" Minimum="0" Maximum="1"
-                             Value="{Binding DisplayedClutch, Mode=OneWay}"
-                             Foreground="#6AA8E0" Background="#1A2416" BorderThickness="0"/>
+                <Grid Width="16" Margin="2,0" Height="56">
+                    <Border Background="#1A2416" CornerRadius="4"/>
+                    <Border x:Name="ThrGhost" Height="2" CornerRadius="1" VerticalAlignment="Bottom"
+                            Background="#55FFFFFF" Visibility="Collapsed"/>
+                    <Border x:Name="ThrFill" CornerRadius="4" VerticalAlignment="Bottom" Height="0"
+                            Background="#5AD15A"/>
+                </Grid>
+                <Grid Width="16" Margin="2,0" Height="56">
+                    <Border Background="#1A2416" CornerRadius="4"/>
+                    <Border x:Name="BrkGhost" Height="2" CornerRadius="1" VerticalAlignment="Bottom"
+                            Background="#55FFFFFF" Visibility="Collapsed"/>
+                    <Border x:Name="BrkFill" CornerRadius="4" VerticalAlignment="Bottom" Height="0"
+                            Background="#E05A5A"/>
+                </Grid>
+                <Grid Width="16" Margin="2,0" Height="56">
+                    <Border Background="#1A2416" CornerRadius="4"/>
+                    <Border x:Name="CltGhost" Height="2" CornerRadius="1" VerticalAlignment="Bottom"
+                            Background="#55FFFFFF" Visibility="Collapsed"/>
+                    <Border x:Name="CltFill" CornerRadius="4" VerticalAlignment="Bottom" Height="0"
+                            Background="#6AA8E0"/>
+                </Grid>
             </StackPanel>
             <!-- Labels -->
             <StackPanel Orientation="Horizontal" Margin="0,3,0,0">

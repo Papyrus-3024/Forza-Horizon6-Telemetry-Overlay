@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -47,13 +48,60 @@ public partial class ArcTachWidget : UserControl
     // Arc centre/radius, recomputed only when the size changes.
     private double _cx, _cy, _r;
 
+    // Per-LED glow halos (lit shift-light colour; off LEDs glow nothing).
+    private Border[] _leds = null!;
+    private DropShadowEffect[] _ledGlows = null!;
+
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public ArcTachWidget()
     {
         InitializeComponent();
         FillArc.Effect = _glow;
+
+        _leds = new[] { Led1, Led2, Led3, Led4, Led5 };
+        _ledGlows = new DropShadowEffect[_leds.Length];
+        for (int i = 0; i < _leds.Length; i++)
+        {
+            _ledGlows[i] = new DropShadowEffect { ShadowDepth = 0, BlurRadius = 8, Opacity = 0 };
+            _leds[i].Effect = _ledGlows[i];
+        }
+
+        DataContextChanged += OnDataContextChanged;
         Loaded += (_, _) => Layout();
+    }
+
+    // ── Shift-light glow wiring ─────────────────────────────────────────────────
+
+    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.OldValue is INotifyPropertyChanged oldVm)
+            oldVm.PropertyChanged -= OnVmPropertyChanged;
+        if (e.NewValue is INotifyPropertyChanged newVm)
+            newVm.PropertyChanged += OnVmPropertyChanged;
+        UpdateLeds();
+    }
+
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is null || e.PropertyName.StartsWith("Light", StringComparison.Ordinal))
+            UpdateLeds();
+    }
+
+    private void UpdateLeds()
+    {
+        if (DataContext is not ViewModels.TelemetryViewModel vm) return;
+        SetLed(0, vm.Light1); SetLed(1, vm.Light2); SetLed(2, vm.Light3);
+        SetLed(3, vm.Light4); SetLed(4, vm.Light5);
+
+        void SetLed(int i, Brush b)
+        {
+            if (b is not SolidColorBrush s) return;
+            var c = s.Color;
+            _ledGlows[i].Color = c;
+            // Dim "off" colour (low total luminance) → no halo; lit colours bloom.
+            _ledGlows[i].Opacity = (c.R + c.G + c.B) < 200 ? 0.0 : 0.9;
+        }
     }
 
     private static void OnRpmChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

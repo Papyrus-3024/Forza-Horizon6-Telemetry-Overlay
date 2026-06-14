@@ -22,6 +22,7 @@ public partial class FreeLayout : UserControl
     private readonly FuelArcWidget         _fuelArcWidget;
     private readonly SpeedSlipstreamWidget _slipstreamWidget;
     private readonly ArcTachWidget         _arcTachWidget;
+    private readonly PedalsSteerWidget     _pedalsWidget;
 
     // Edit-mode state
     private bool _editMode;
@@ -46,13 +47,14 @@ public partial class FreeLayout : UserControl
         _fuelArcWidget    = new FuelArcWidget();
         _slipstreamWidget = new SpeedSlipstreamWidget();
         _arcTachWidget    = new ArcTachWidget();
+        _pedalsWidget     = new PedalsSteerWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
             [WidgetId.Gear]        = new GearWidget(),
             [WidgetId.Speed]       = new SpeedWidget(),
             [WidgetId.RpmShift]    = new RpmShiftWidget(),
-            [WidgetId.PedalsSteer] = new PedalsSteerWidget(),
+            [WidgetId.PedalsSteer] = _pedalsWidget,
             [WidgetId.Boost]       = boostWidget,
             [WidgetId.LapTiming]   = new LapTimingWidget(),
             [WidgetId.GForce]      = gForceWidget,
@@ -102,6 +104,11 @@ public partial class FreeLayout : UserControl
 
         // Bind ArcTachWidget DP.
         Bind(_arcTachWidget, ArcTachWidget.RpmFractionProperty, nameof(ViewModels.TelemetryViewModel.DisplayedRpmFraction));
+
+        // Bind PedalsSteerWidget pedal DPs (steering/percent text still bind via DataContext).
+        Bind(_pedalsWidget, PedalsSteerWidget.ThrottleProperty, nameof(ViewModels.TelemetryViewModel.DisplayedThrottle));
+        Bind(_pedalsWidget, PedalsSteerWidget.BrakeProperty,    nameof(ViewModels.TelemetryViewModel.DisplayedBrake));
+        Bind(_pedalsWidget, PedalsSteerWidget.ClutchProperty,   nameof(ViewModels.TelemetryViewModel.DisplayedClutch));
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;

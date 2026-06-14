@@ -1,7 +1,10 @@
 param(
     [double]$SpeedMph = 120,
     [int]$Steer = 0,
-    [int]$Seconds = 20
+    [int]$Seconds = 20,
+    [int]$Accel = 220,
+    [int]$Brake = 0,
+    [single]$Rpm = 6000
 )
 
 # Build a 324-byte FH6 Data Out packet with controllable fields, send to 127.0.0.1:20440.
@@ -18,7 +21,7 @@ PutI 0   1                       # IsRaceOn
 PutI 4   12345                   # TimestampMs
 PutF 8   8000                    # EngineMaxRpm
 PutF 12  900                     # EngineIdleRpm
-PutF 16  6000                    # CurrentEngineRpm  (0.75 fraction)
+PutF 16  $Rpm                    # CurrentEngineRpm
 PutF 256 ([single]($SpeedMph / 2.23694))  # Speed m/s
 PutF 260 280000                  # Power (W)
 PutF 264 480                     # Torque
@@ -32,8 +35,8 @@ PutF 296 75.5                    # BestLap
 PutF 300 78.2                    # LastLap
 PutF 304 41.0                    # CurrentLap
 $pkt[314] = 1                    # RacePosition
-$pkt[315] = 220                  # Accel
-$pkt[316] = 0                    # Brake
+$pkt[315] = [byte]$Accel         # Accel
+$pkt[316] = [byte]$Brake         # Brake
 $pkt[317] = 0                    # Clutch
 $pkt[319] = 4                    # Gear
 $pkt[320] = [byte]([sbyte]$Steer) # Steer (sbyte -127..127)

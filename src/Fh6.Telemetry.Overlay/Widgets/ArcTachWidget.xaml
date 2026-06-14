@@ -14,11 +14,11 @@
             <StackPanel>
                 <!-- Shift-light strip — semantic staging colors (bound brushes) -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,4">
-                    <Border Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light1}"/>
-                    <Border Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light2}"/>
-                    <Border Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light3}"/>
-                    <Border Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light4}"/>
-                    <Border Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light5}"/>
+                    <Border x:Name="Led1" Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light1}"/>
+                    <Border x:Name="Led2" Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light2}"/>
+                    <Border x:Name="Led3" Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light3}"/>
+                    <Border x:Name="Led4" Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light4}"/>
+                    <Border x:Name="Led5" Width="16" Height="8" CornerRadius="3" Margin="3,0" Background="{Binding Light5}"/>
                 </StackPanel>
 
                 <!-- Arc tach + centred gear digit -->
