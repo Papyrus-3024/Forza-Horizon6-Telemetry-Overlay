@@ -21,6 +21,7 @@ public partial class FreeLayout : UserControl
     private readonly SteeringHorizonWidget _horizonWidget;
     private readonly FuelArcWidget         _fuelArcWidget;
     private readonly SpeedSlipstreamWidget _slipstreamWidget;
+    private readonly ArcTachWidget         _arcTachWidget;
 
     // Edit-mode state
     private bool _editMode;
@@ -44,6 +45,7 @@ public partial class FreeLayout : UserControl
         _horizonWidget    = new SteeringHorizonWidget();
         _fuelArcWidget    = new FuelArcWidget();
         _slipstreamWidget = new SpeedSlipstreamWidget();
+        _arcTachWidget    = new ArcTachWidget();
 
         _widgets = new Dictionary<WidgetId, FrameworkElement>
         {
@@ -62,6 +64,7 @@ public partial class FreeLayout : UserControl
             [WidgetId.SteeringHorizon]  = _horizonWidget,
             [WidgetId.FuelArc]          = _fuelArcWidget,
             [WidgetId.SpeedSlipstream]  = _slipstreamWidget,
+            [WidgetId.ArcTach]          = _arcTachWidget,
         };
 
         foreach (var w in _widgets.Values)
@@ -96,6 +99,9 @@ public partial class FreeLayout : UserControl
 
         // Bind SpeedSlipstreamWidget DP.
         Bind(_slipstreamWidget, SpeedSlipstreamWidget.SpeedMphProperty, nameof(ViewModels.TelemetryViewModel.DisplayedSpeedMph));
+
+        // Bind ArcTachWidget DP.
+        Bind(_arcTachWidget, ArcTachWidget.RpmFractionProperty, nameof(ViewModels.TelemetryViewModel.DisplayedRpmFraction));
 
         // Drag handlers on the Canvas
         Surface.PreviewMouseLeftButtonDown += Surface_PreviewMouseLeftButtonDown;
