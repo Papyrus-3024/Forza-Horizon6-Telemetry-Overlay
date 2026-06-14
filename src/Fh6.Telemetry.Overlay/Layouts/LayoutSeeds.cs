@@ -22,42 +22,42 @@ public static class LayoutSeeds
     };
 
     // BottomStrip: compact horizontal row at Y=8, ~8px gaps between widgets.
-    // Approximate rendered widths (theme paddings included):
-    //   Gear ~68, Speed ~90, RpmShift ~176, PedalsSteer ~80, Boost ~96, LapTiming ~156, GForce ~96, PowerTorque ~102
+    // Approximate rendered widths after v2 size bump (CornerRadius=10, larger fonts):
+    //   Gear ~82, Speed ~116, RpmShift ~194, PedalsSteer ~98, Boost ~100, LapTiming ~166, GForce ~104, PowerTorque ~112
     // Chart (~320x180) placed off to the right, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> BottomStrip =
         new Dictionary<WidgetId, WidgetSeed>
         {
-            [WidgetId.Gear]        = new(  8,  8),
-            [WidgetId.Speed]       = new( 84,  8),
-            [WidgetId.RpmShift]    = new(182,  8),
-            [WidgetId.PedalsSteer] = new(366,  8),
-            [WidgetId.Boost]       = new(454,  8),
-            [WidgetId.LapTiming]   = new(558,  8),
-            [WidgetId.GForce]      = new(722,  8),
-            [WidgetId.PowerTorque] = new(826,  8),
-            [WidgetId.Chart]       = new(936,  8, Visible: false),
+            [WidgetId.Gear]        = new(  8,   8),
+            [WidgetId.Speed]       = new( 98,   8),
+            [WidgetId.RpmShift]    = new(222,   8),
+            [WidgetId.PedalsSteer] = new(424,   8),
+            [WidgetId.Boost]       = new(530,   8),
+            [WidgetId.LapTiming]   = new(638,   8),
+            [WidgetId.GForce]      = new(812,   8),
+            [WidgetId.PowerTorque] = new(924,   8),
+            [WidgetId.Chart]       = new(1044,  8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
-    // Row 1 (Y=8):   Gear | Speed  (side by side)
-    // Row 2 (Y=84):  RpmShift      (spans the full cluster width ~168px)
-    // Row 3 (Y=148): PedalsSteer | Boost (side by side)
-    // Row 4 (Y=246): LapTiming
-    // Row 5 (Y=320): GForce | PowerTorque
+    // Row 1 (Y=8):   Gear | Speed  (side by side; Gear ~82px wide)
+    // Row 2 (Y=106): RpmShift      (spans the full cluster width ~194px)
+    // Row 3 (Y=196): PedalsSteer | Boost (side by side; PedalsSteer ~98px wide)
+    // Row 4 (Y=316): LapTiming
+    // Row 5 (Y=448): GForce | PowerTorque
     // Chart (~320x180) below the cluster, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CornerPanel =
         new Dictionary<WidgetId, WidgetSeed>
         {
             [WidgetId.Gear]        = new(  8,   8),
-            [WidgetId.Speed]       = new( 84,   8),
-            [WidgetId.RpmShift]    = new(  8,  84),
-            [WidgetId.PedalsSteer] = new(  8, 150),
-            [WidgetId.Boost]       = new( 96, 150),
-            [WidgetId.LapTiming]   = new(  8, 248),
-            [WidgetId.GForce]      = new(  8, 330),
-            [WidgetId.PowerTorque] = new(112, 330),
-            [WidgetId.Chart]       = new(  8, 444, Visible: false),
+            [WidgetId.Speed]       = new( 98,   8),
+            [WidgetId.RpmShift]    = new(  8, 106),
+            [WidgetId.PedalsSteer] = new(  8, 196),
+            [WidgetId.Boost]       = new(114, 196),
+            [WidgetId.LapTiming]   = new(  8, 316),
+            [WidgetId.GForce]      = new(  8, 448),
+            [WidgetId.PowerTorque] = new(120, 448),
+            [WidgetId.Chart]       = new(  8, 570, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
@@ -66,14 +66,14 @@ public static class LayoutSeeds
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
-            [WidgetId.PedalsSteer] = new(690, 816),
-            [WidgetId.RpmShift]    = new(786, 768),
-            [WidgetId.Gear]        = new(786, 840),
-            [WidgetId.Speed]       = new(862, 840),
-            [WidgetId.LapTiming]   = new(970, 816),
-            [WidgetId.Boost]       = new(690, 900, Visible: false),
-            [WidgetId.GForce]      = new(690, 984, Visible: false),
-            [WidgetId.PowerTorque] = new(790, 984, Visible: false),
-            [WidgetId.Chart]       = new(640, 900, Visible: false),
+            [WidgetId.PedalsSteer] = new(860, 816),
+            [WidgetId.RpmShift]    = new(966, 764),
+            [WidgetId.Gear]        = new(966, 840),
+            [WidgetId.Speed]       = new(1056, 840),
+            [WidgetId.LapTiming]   = new(1180, 816),
+            [WidgetId.Boost]       = new(860,  900, Visible: false),
+            [WidgetId.GForce]      = new(860,  990, Visible: false),
+            [WidgetId.PowerTorque] = new(972,  990, Visible: false),
+            [WidgetId.Chart]       = new(640,  900, Visible: false),
         };
 }
