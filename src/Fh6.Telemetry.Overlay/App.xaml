@@ -6,8 +6,11 @@
              Border BEHIND the content Border so card text keeps crisp ClearType
              (an Effect on text forces grayscale AA). Mirrors the mockup's
              box-shadow: 0 12px 34px rgba(0,0,0,0.5). -->
+        <!-- RenderingBias=Performance: this window is layered (AllowsTransparency) and thus
+             software-rendered, so a quality gaussian blur is costly. The shadow borders
+             also set CacheMode=BitmapCache so the blur is rasterized once, not per frame. -->
         <DropShadowEffect x:Key="Fh6.PanelShadow"
-                          Color="#000000" BlurRadius="22" ShadowDepth="6"
-                          Direction="270" Opacity="0.55" RenderingBias="Quality"/>
+                          Color="#000000" BlurRadius="18" ShadowDepth="5"
+                          Direction="270" Opacity="0.55" RenderingBias="Performance"/>
     </Application.Resources>
 </Application>

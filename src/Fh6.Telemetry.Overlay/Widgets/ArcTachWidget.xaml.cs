@@ -44,52 +44,65 @@ public partial class ArcTachWidget : UserControl
         Color       = Color.FromRgb(0xFF, 0x90, 0x40),
     };
 
+    // Arc centre/radius, recomputed only when the size changes.
+    private double _cx, _cy, _r;
+
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public ArcTachWidget()
     {
         InitializeComponent();
         FillArc.Effect = _glow;
-        Loaded += (_, _) => Redraw();
+        Loaded += (_, _) => Layout();
     }
 
     private static void OnRpmChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        => ((ArcTachWidget)d).Redraw();
+        => ((ArcTachWidget)d).UpdateFill();
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Redraw();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Layout();
 
-    // ── Redraw ────────────────────────────────────────────────────────────────
+    // ── Static layout (size-dependent only) ────────────────────────────────────
 
-    private void Redraw()
+    private void Layout()
     {
         double w = ArcField.Width;
         double h = ArcField.Height;
         if (w <= 0 || h <= 0) return;
 
-        double cx = w / 2.0;
-        double cy = h / 2.0 + 2.0;
-        double r  = Math.Min(w, h) / 2.0 - 8.0;
+        _cx = w / 2.0;
+        _cy = h / 2.0 + 2.0;
+        _r  = Math.Min(w, h) / 2.0 - 8.0;
 
-        TrackArc.Data   = ArcPath(cx, cy, r, StartDeg, SweepDeg);
-        BandArc.Data    = ArcPath(cx, cy, r, StartDeg + 0.62 * SweepDeg, 0.24 * SweepDeg);
-        RedlineArc.Data = ArcPath(cx, cy, r, StartDeg + 0.90 * SweepDeg, 0.10 * SweepDeg);
+        // Track / band / redline never change with rpm — build them once per size.
+        TrackArc.Data   = ArcPath(_cx, _cy, _r, StartDeg, SweepDeg);
+        BandArc.Data    = ArcPath(_cx, _cy, _r, StartDeg + 0.62 * SweepDeg, 0.24 * SweepDeg);
+        RedlineArc.Data = ArcPath(_cx, _cy, _r, StartDeg + 0.90 * SweepDeg, 0.10 * SweepDeg);
+
+        // Centre the gear block on the arc centre.
+        CenterBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+        var bs = CenterBlock.DesiredSize;
+        Canvas.SetLeft(CenterBlock, _cx - bs.Width / 2.0);
+        Canvas.SetTop(CenterBlock,  _cy - bs.Height / 2.0);
+
+        UpdateFill();
+    }
+
+    // ── Per-frame fill update (cheap) ───────────────────────────────────────────
+
+    private void UpdateFill()
+    {
+        if (_r <= 0) return;
 
         double frac = Math.Clamp(double.IsNaN(RpmFraction) ? 0.0 : RpmFraction, 0.0, 1.0);
         if (frac > 0.005)
         {
-            FillArc.Data = ArcPath(cx, cy, r, StartDeg, frac * SweepDeg);
+            FillArc.Data = ArcPath(_cx, _cy, _r, StartDeg, frac * SweepDeg);
             FillArc.Visibility = Visibility.Visible;
         }
         else
         {
             FillArc.Visibility = Visibility.Collapsed;
         }
-
-        // Centre the gear block on the arc centre.
-        CenterBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        var bs = CenterBlock.DesiredSize;
-        Canvas.SetLeft(CenterBlock, cx - bs.Width / 2.0);
-        Canvas.SetTop(CenterBlock,  cy - bs.Height / 2.0);
     }
 
     // ── Arc geometry helpers ────────────────────────────────────────────────────

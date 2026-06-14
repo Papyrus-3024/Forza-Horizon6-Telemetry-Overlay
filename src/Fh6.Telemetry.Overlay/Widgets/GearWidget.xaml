@@ -23,7 +23,7 @@
         <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
         <Border Background="{DynamicResource Fh6.Surface}"
                 BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}"/>
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
         <!-- Content layer -->
         <Border CornerRadius="10" Padding="14,8"
                 ClipToBounds="True">
