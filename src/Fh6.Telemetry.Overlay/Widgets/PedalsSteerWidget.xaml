@@ -3,9 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:w="clr-namespace:Fh6.Telemetry.Overlay.Widgets"
              TextOptions.TextFormattingMode="Display">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="12,8">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="12,8">
         <StackPanel>
             <TextBlock Text="PEDALS"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
@@ -43,5 +47,6 @@
             <!-- Steering bar — uses accent color via code-behind Fill (separate widget) -->
             <w:SteeringBar Value="{Binding DisplayedSteer, Mode=OneWay}" Height="7" Margin="0,6,0,0"/>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

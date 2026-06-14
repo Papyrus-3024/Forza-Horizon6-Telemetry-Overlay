@@ -2,9 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              TextOptions.TextFormattingMode="Display">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="12,8">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="12,8">
         <StackPanel MinWidth="170">
             <!-- Shift-light dots — semantic staging colors kept hardcoded (green→amber→red) -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,5" HorizontalAlignment="Center">
@@ -35,5 +39,6 @@
                 </ProgressBar.Foreground>
             </ProgressBar>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

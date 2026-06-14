@@ -3,9 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="200" Height="90"
              SizeChanged="OnSizeChanged">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10">
         <Grid>
             <!-- Clipping mask so horizon plane stays inside the rounded border -->
             <Grid.Clip>
@@ -86,5 +90,6 @@
                        HorizontalAlignment="Left" VerticalAlignment="Bottom"
                        Margin="8,0,0,5"/>
         </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

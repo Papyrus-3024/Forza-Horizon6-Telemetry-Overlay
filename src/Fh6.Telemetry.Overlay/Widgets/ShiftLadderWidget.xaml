@@ -13,9 +13,13 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="10,8">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="10,8">
         <StackPanel>
             <TextBlock Text="RPM"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
@@ -30,6 +34,9 @@
                     <!-- Gradient fill — grows from bottom -->
                     <Border x:Name="FillBorder" CornerRadius="5"
                             VerticalAlignment="Bottom" Height="0">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#E0C93A" BlurRadius="8" ShadowDepth="0" Opacity="0.55"/>
+                        </Border.Effect>
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0,1" EndPoint="0,0">
                                 <GradientStop Color="#5AD15A" Offset="0.0"/>
@@ -76,5 +83,6 @@
                        FontFamily="Consolas" FontSize="18" FontWeight="Bold"
                        Margin="0,4,0,0"/>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

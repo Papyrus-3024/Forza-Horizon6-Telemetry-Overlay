@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
 
@@ -42,9 +43,13 @@ public partial class FuelArcWidget : UserControl
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
+    // Color-matched glow halo on the fill arc.
+    private readonly DropShadowEffect _glow = new() { ShadowDepth = 0, BlurRadius = 9, Opacity = 0.8 };
+
     public FuelArcWidget()
     {
         InitializeComponent();
+        FillArc.Effect = _glow;
         Loaded += (_, _) => Redraw();
     }
 
@@ -76,9 +81,11 @@ public partial class FuelArcWidget : UserControl
         if (fillDeg > 0.5)
         {
             FillArc.Data   = ArcPath(cx, cy, r, StartDeg, fillDeg);
-            FillArc.Stroke = fraction <= CriticalThreshold ? BrushCritical
+            var fillColor  = fraction <= CriticalThreshold ? BrushCritical
                            : fraction <= LowThreshold      ? BrushAmber
                                                            : BrushHealthy;
+            FillArc.Stroke = fillColor;
+            _glow.Color    = fillColor.Color;
             FillArc.Visibility = Visibility.Visible;
         }
         else

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
 
@@ -58,11 +59,15 @@ public partial class BoostWidget : UserControl
     private const double PeakHoldMs   = 3000.0;
     private const double PeakDecayMs  = 1500.0;
 
+    // Color-matched glow halo on the fill arc (updated as boost sign changes).
+    private readonly DropShadowEffect _glow = new() { ShadowDepth = 0, BlurRadius = 9, Opacity = 0.8 };
+
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public BoostWidget()
     {
         InitializeComponent();
+        FillArc.Effect = _glow;
         Loaded += (_, _) => Redraw();
     }
 
@@ -99,6 +104,9 @@ public partial class BoostWidget : UserControl
         {
             FillArc.Data   = ArcPath(cx, cy, r, StartDeg, fillDeg);
             FillArc.Stroke = boostClamped >= 0 ? PositiveBrush : VacuumBrush;
+            _glow.Color    = boostClamped >= 0
+                ? Color.FromRgb(0x6F, 0xB6, 0xFF)
+                : Color.FromRgb(0xE0, 0xC9, 0x3A);
             FillArc.Visibility = Visibility.Visible;
         }
         else
