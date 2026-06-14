@@ -119,4 +119,37 @@ public class TelemetryReadoutTests
         var r = new TelemetryReadout(packet);
         Assert.Equal(0f, r.TorqueLbFt);
     }
+
+    [Fact]
+    public void Per_wheel_fields_pass_through_from_golden_driving_frame()
+    {
+        var r = DrivingReadout();
+
+        // TireTemp: real values from the golden driving frame (~148 °F front-left)
+        Assert.Equal(148.3, r.TireTemp.FrontLeft, 1);
+        Assert.True(r.TireTemp.All(float.IsFinite));
+
+        // TireSlipRatio: front-left is the large driven-wheel value seen in the packet test
+        Assert.Equal(10.73, r.TireSlipRatio.FrontLeft, 2);
+        Assert.True(r.TireSlipRatio.All(float.IsFinite));
+
+        // TireSlipAngle: all corners should be finite
+        Assert.True(r.TireSlipAngle.All(float.IsFinite));
+
+        // TireCombinedSlip: front-left matches slip-ratio (same value for this frame)
+        Assert.Equal(10.73, r.TireCombinedSlip.FrontLeft, 2);
+        Assert.True(r.TireCombinedSlip.All(float.IsFinite));
+
+        // SuspensionTravelNorm: all corners should be finite
+        Assert.True(r.SuspensionTravelNorm.All(float.IsFinite));
+    }
+
+    [Fact]
+    public void Per_wheel_fields_are_zero_for_default_packet()
+    {
+        var r = new TelemetryReadout(new TelemetryPacket());
+        Assert.Equal(0f, r.TireTemp.FrontLeft);
+        Assert.Equal(0f, r.TireCombinedSlip.RearRight);
+        Assert.Equal(0f, r.SuspensionTravelNorm.FrontLeft);
+    }
 }

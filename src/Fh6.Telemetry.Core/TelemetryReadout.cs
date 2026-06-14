@@ -38,6 +38,12 @@ public readonly struct TelemetryReadout
         Power = p.Power;
         Torque = p.Torque;
         Position = p.Position;
+
+        TireTemp              = p.TireTemp;
+        TireSlipRatio         = p.TireSlipRatio;
+        TireSlipAngle         = p.TireSlipAngle;
+        TireCombinedSlip      = p.TireCombinedSlip;
+        SuspensionTravelNorm  = p.NormalizedSuspensionTravel;
     }
 
     public bool IsRaceOn    { get; }
@@ -64,6 +70,13 @@ public readonly struct TelemetryReadout
     public float Power { get; }
     public float Torque { get; }
     public Vec3 Position { get; }
+
+    // ── Per-wheel telemetry ──────────────────────────────────────────────────
+    public Wheels TireTemp             { get; }
+    public Wheels TireSlipRatio        { get; }
+    public Wheels TireSlipAngle        { get; }
+    public Wheels TireCombinedSlip     { get; }
+    public Wheels SuspensionTravelNorm { get; }
 
     // World ground-plane coordinates (X/Z are the ground plane, Y is altitude)
     public float PositionX => Position.X;
