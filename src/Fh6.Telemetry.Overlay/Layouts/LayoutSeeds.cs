@@ -25,6 +25,7 @@ public static class LayoutSeeds
     // Approximate rendered widths (theme paddings included):
     //   Gear ~68, Speed ~90, RpmShift ~176, PedalsSteer ~80, Boost ~96, LapTiming ~156, GForce ~96, PowerTorque ~102
     // MiniMap (~240x240) placed top-right area, away from the strip.
+    // Chart (~320x180) placed below MiniMap, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> BottomStrip =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -37,6 +38,7 @@ public static class LayoutSeeds
             [WidgetId.GForce]      = new(722,  8),
             [WidgetId.PowerTorque] = new(826,  8),
             [WidgetId.MiniMap]     = new(936,  8),
+            [WidgetId.Chart]       = new(936,  8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -45,7 +47,7 @@ public static class LayoutSeeds
     // Row 3 (Y=148): PedalsSteer | Boost (side by side)
     // Row 4 (Y=246): LapTiming
     // Row 5 (Y=320): GForce | PowerTorque
-    // MiniMap (~240x240) below the cluster.
+    // MiniMap (~240x240) below the cluster. Chart (~320x180) below MiniMap, hidden.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CornerPanel =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -58,11 +60,13 @@ public static class LayoutSeeds
             [WidgetId.GForce]      = new(  8, 330),
             [WidgetId.PowerTorque] = new(112, 330),
             [WidgetId.MiniMap]     = new(  8, 444),
+            [WidgetId.Chart]       = new(  8, 700, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
     // PedalsSteer left of center, RpmShift above Gear/Speed, LapTiming right of center.
     // Non-essential widgets hidden. MiniMap visible, placed top-right corner.
+    // Chart placed below the main cluster, hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -75,5 +79,6 @@ public static class LayoutSeeds
             [WidgetId.GForce]      = new(690, 984, Visible: false),
             [WidgetId.PowerTorque] = new(790, 984, Visible: false),
             [WidgetId.MiniMap]     = new(1680,  8),
+            [WidgetId.Chart]       = new(640, 900, Visible: false),
         };
 }
