@@ -27,6 +27,10 @@ public partial class SettingsWindow : Window
         HudScaleSlider.Value = config.Scale;
         MapSeasonBox.ItemsSource = Enum.GetValues(typeof(MapSeason));
         MapSeasonBox.SelectedItem = config.Season;
+        MapZoomSlider.Value = config.MapZoom;
+        MapScaleBox.Text   = config.MapScale.ToString("G6");
+        MapOffsetXBox.Text = config.MapOffsetX.ToString("G6");
+        MapOffsetYBox.Text = config.MapOffsetY.ToString("G6");
 
         // Ensure all widget keys exist before reading them.
         config.Normalize(config.Layout);
@@ -120,6 +124,13 @@ public partial class SettingsWindow : Window
         _config.Scale = HudScaleSlider.Value;
         if (MapSeasonBox.SelectedItem is MapSeason season)
             _config.Season = season;
+        _config.MapZoom = MapZoomSlider.Value;
+        if (double.TryParse(MapScaleBox.Text, out var mapScale))
+            _config.MapScale = mapScale;
+        if (double.TryParse(MapOffsetXBox.Text, out var mapOffX))
+            _config.MapOffsetX = mapOffX;
+        if (double.TryParse(MapOffsetYBox.Text, out var mapOffY))
+            _config.MapOffsetY = mapOffY;
 
         foreach (var row in _widgetRows)
         {

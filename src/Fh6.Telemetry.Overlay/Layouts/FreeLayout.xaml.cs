@@ -87,8 +87,8 @@ public partial class FreeLayout : UserControl
     /// </summary>
     public void ApplyConfig(OverlayConfig cfg)
     {
-        // Reload map image and calibration whenever config changes.
-        _mapWidget.Configure(MapImageResolver.Resolve(cfg), cfg.MapCalibration);
+        // Reload map image and effective transform whenever config changes.
+        _mapWidget.Configure(MapImageResolver.Resolve(cfg), cfg);
 
         // Apply chart window and series config.
         _chartWidget.Configure(cfg.Chart);
