@@ -12,4 +12,6 @@ public enum WidgetId
     PowerTorque,
     Chart,
     Tire,
+    SpeedTape,
+    ShiftLadder,
 }

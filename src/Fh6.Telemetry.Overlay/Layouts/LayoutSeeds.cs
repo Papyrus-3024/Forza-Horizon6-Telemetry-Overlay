@@ -26,6 +26,7 @@ public static class LayoutSeeds
     //   Gear ~82, Speed ~116, RpmShift ~194, PedalsSteer ~98, Boost ~130, LapTiming ~166, GForce ~104, PowerTorque ~200, Tire ~154
     // Chart (~320x180) placed off to the right, hidden by default.
     // Tire placed immediately after the chart, hidden by default (shown in CornerPanel).
+    // SpeedTape and ShiftLadder are alternatives: hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> BottomStrip =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -39,6 +40,8 @@ public static class LayoutSeeds
             [WidgetId.PowerTorque] = new(954,   8),
             [WidgetId.Chart]       = new(1162,  8, Visible: false),
             [WidgetId.Tire]        = new(1162,  8, Visible: false),
+            [WidgetId.SpeedTape]   = new( 98,   8, Visible: false),
+            [WidgetId.ShiftLadder] = new(222,   8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -49,6 +52,7 @@ public static class LayoutSeeds
     // Row 5 (Y=448): GForce | PowerTorque
     // Row 6 (Y=570): Tire
     // Chart below the cluster, hidden by default.
+    // SpeedTape and ShiftLadder are alternatives: hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CornerPanel =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -62,11 +66,14 @@ public static class LayoutSeeds
             [WidgetId.PowerTorque] = new(120, 448),
             [WidgetId.Tire]        = new(  8, 570),
             [WidgetId.Chart]       = new(  8, 720, Visible: false),
+            [WidgetId.SpeedTape]   = new( 98,   8, Visible: false),
+            [WidgetId.ShiftLadder] = new(220,   8, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
     // PedalsSteer left of center, RpmShift above Gear/Speed, LapTiming right of center.
     // Non-essential widgets hidden. Chart and Tire placed below, hidden by default.
+    // SpeedTape and ShiftLadder are alternatives: hidden by default.
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
@@ -80,5 +87,7 @@ public static class LayoutSeeds
             [WidgetId.PowerTorque] = new(972,  990, Visible: false),
             [WidgetId.Tire]        = new(1180, 900, Visible: false),
             [WidgetId.Chart]       = new(640,  900, Visible: false),
+            [WidgetId.SpeedTape]   = new(1056, 840, Visible: false),
+            [WidgetId.ShiftLadder] = new(966,  764, Visible: false),
         };
 }
