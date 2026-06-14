@@ -241,7 +241,7 @@
                         </StackPanel>
                     </TabItem>
 
-                    <!-- DIAGNOSTICS -->
+                    <!-- HEALTH (automated diagnosis, then manual checks if needed) -->
                     <TabItem Header="Health">
                         <StackPanel Style="{StaticResource TabBody}">
                             <TextBlock Text="Telemetry health" Foreground="#9AA4B2" FontSize="10" Margin="0,0,0,4"/>
@@ -249,33 +249,41 @@
                                     CornerRadius="5" Padding="10,8" Margin="0,0,0,8">
                                 <StackPanel>
                                     <TextBlock x:Name="HealthState" Text="—" FontSize="15" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding Diagnostics}" Style="{StaticResource Hint}" Margin="0,2,0,0"/>
+                                    <TextBlock x:Name="HealthDetail" Style="{StaticResource Hint}" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Border>
-                            <TextBlock Text="If no data arrives:" Margin="0,0,0,3"/>
-                            <TextBlock Style="{StaticResource Hint}"
-                                       Text="• FH6 → Settings → HUD and Gameplay → Data Out = ON&#x0a;• Data Out IP points at THIS pc (127.0.0.1 if same machine), matching port&#x0a;• Data is only sent while actively driving (not menus/pause/replay)&#x0a;• Microsoft Store / Game Pass build is sandboxed from localhost — apply the loopback exemption:"/>
-                            <Border Background="#11161D" BorderBrush="{StaticResource FldBorder}" BorderThickness="1"
-                                    CornerRadius="4" Padding="6,4" Margin="0,5,0,4">
-                                <TextBlock x:Name="LoopbackCmd" FontFamily="Consolas" FontSize="10" TextWrapping="Wrap"
-                                           Foreground="#C8D2DD"
-                                           Text="CheckNetIsolation LoopbackExempt -a -n=&quot;Microsoft.624F8B84B80_8wekyb3d8bbwe&quot;"/>
-                            </Border>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="Copy command" Click="OnCopyLoopback"/>
-                                <TextBlock x:Name="CopyHint" Style="{StaticResource Hint}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <!-- Shown only when no data is arriving. -->
+                            <StackPanel x:Name="HealthChecklist">
+                                <TextBlock Text="If no data arrives, check:" Margin="0,0,0,3"/>
+                                <TextBlock Style="{StaticResource Hint}"
+                                           Text="• FH6 → Settings → HUD and Gameplay → Data Out = ON&#x0a;• Game Data Out IP = 127.0.0.1 (same PC) · overlay listen address = 0.0.0.0&#x0a;• The port matches on both sides&#x0a;• Data is only sent while actively driving (not menus / pause / replay)&#x0a;• No other app is bound to the port"/>
                             </StackPanel>
-                            <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,0"
-                                       Text="Tip: 'fh6 doctor' in a terminal samples the port standalone."/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
+                                       Text="Tip: 'fh6 doctor' samples the port from a terminal (works before the overlay binds it)."/>
                         </StackPanel>
                     </TabItem>
 
-                    <!-- EXPORT -->
-                    <TabItem Header="Export">
+                    <!-- CAPTURE: live session recording + export an existing file -->
+                    <TabItem Header="Capture">
                         <StackPanel Style="{StaticResource TabBody}">
-                            <TextBlock Text="Export a capture to CSV" Foreground="#9AA4B2" FontSize="10" Margin="0,0,0,4"/>
-                            <TextBlock Text="Capture file (.jsonl)"/>
-                            <Grid Margin="0,3,0,6">
+                            <TextBlock Text="Live session" Foreground="#9AA4B2" FontSize="10" Margin="0,0,0,4"/>
+                            <CheckBox x:Name="AlwaysSaveBox" Content="Always save sessions"
+                                      Click="OnAlwaysSaveToggled" Margin="0,0,0,6"/>
+                            <TextBlock Text="Session name"/>
+                            <TextBox x:Name="SessionNameBox" Margin="0,2,0,6"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                <TextBlock Text="Save as" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <CheckBox x:Name="FmtJsonl" Content="JSONL" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <CheckBox x:Name="FmtCsv" Content="CSV" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <CheckBox x:Name="FmtBin" Content="BIN" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button x:Name="SaveSessionBtn" Content="Save current session"
+                                    HorizontalAlignment="Left" Click="OnSaveSession"/>
+                            <TextBlock x:Name="SessionResult" Style="{StaticResource Hint}" Margin="0,6,0,0"/>
+
+                            <Border BorderBrush="#22FFFFFF" BorderThickness="0,1,0,0" Margin="0,10,0,8"/>
+                            <TextBlock Text="Export an existing capture → CSV" Foreground="#9AA4B2" FontSize="10" Margin="0,0,0,4"/>
+                            <Grid Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -285,8 +293,6 @@
                             </Grid>
                             <Button Content="Export to CSV" HorizontalAlignment="Left" Click="OnExportCsv"/>
                             <TextBlock x:Name="ExportResult" Style="{StaticResource Hint}" Margin="0,6,0,0"/>
-                            <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
-                                       Text="Produces a flat, pandas-friendly CSV (one row per packet). Equivalent to 'fh6 export'."/>
                         </StackPanel>
                     </TabItem>
                 </TabControl>

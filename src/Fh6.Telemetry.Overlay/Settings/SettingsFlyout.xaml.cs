@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Fh6.Telemetry.Core;
+using Fh6.Telemetry.Overlay.Telemetry;
 using Fh6.Telemetry.Overlay.Theming;
 using Fh6.Telemetry.Overlay.ViewModels;
 using Fh6.Telemetry.Overlay.Widgets;
@@ -58,16 +59,45 @@ public partial class SettingsFlyout : UserControl
         if (e.PropertyName == nameof(TelemetryViewModel.Diagnostics)) UpdateHealth();
     }
 
+    private static readonly Brush Green = new SolidColorBrush(Color.FromRgb(0x5A, 0xD1, 0x5A));
+    private static readonly Brush Amber = new SolidColorBrush(Color.FromRgb(0xE0, 0xC9, 0x3A));
+    private static readonly Brush Red   = new SolidColorBrush(Color.FromRgb(0xE0, 0x5A, 0x5A));
+
+    /// <summary>
+    /// Auto-diagnoses the connection from what the app already knows (source errors + live
+    /// packet rate), then shows the manual checklist only when there's no data. The remaining
+    /// causes aren't testable from here (game-side settings) — those are in the docs.
+    /// </summary>
     private void UpdateHealth()
     {
         if (HealthState is null) return;
+
         var diag = _vm?.Diagnostics ?? "";
+        var status = _vm?.Status ?? "";
+        bool sourceError = status.Contains("error", StringComparison.OrdinalIgnoreCase);
         bool noData = diag.Length == 0 || diag.StartsWith("waiting", StringComparison.OrdinalIgnoreCase)
                                        || diag.StartsWith("0 ", StringComparison.Ordinal);
-        HealthState.Text = noData ? "● No data" : "● Receiving";
-        HealthState.Foreground = new SolidColorBrush(noData
-            ? Color.FromRgb(0xE0, 0x5A, 0x5A)
-            : Color.FromRgb(0x5A, 0xD1, 0x5A));
+
+        if (sourceError)
+        {
+            HealthState.Text = "✗ Connection error";
+            HealthState.Foreground = Red;
+            HealthDetail.Text = status;
+        }
+        else if (noData)
+        {
+            HealthState.Text = "● Listening — no data yet";
+            HealthState.Foreground = Amber;
+            HealthDetail.Text = $"Bound to {(_config is null ? "the configured port" : $"{_config.ListenAddress}:{_config.Port}")}, but no packets received.";
+        }
+        else
+        {
+            HealthState.Text = "● Receiving";
+            HealthState.Foreground = Green;
+            HealthDetail.Text = diag;
+        }
+
+        HealthChecklist.Visibility = (sourceError || noData) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>Populates the controls from <paramref name="config"/>. Call once after construction.</summary>
@@ -232,22 +262,55 @@ public partial class SettingsFlyout : UserControl
         LayoutNameBox.Text = string.Empty;
     }
 
-    // ─── Health tab ─────────────────────────────────────────────────────────────
+    // ─── Capture tab: live session recording ────────────────────────────────────
 
-    private void OnCopyLoopback(object sender, RoutedEventArgs e)
+    private SessionRecorder? _recorder;
+
+    /// <summary>Wires the live session recorder (live mode only). Hidden controls if null.</summary>
+    public void SetRecorder(SessionRecorder recorder, OverlayConfig config)
     {
-        try
-        {
-            Clipboard.SetText(LoopbackCmd.Text);
-            CopyHint.Text = "copied";
-        }
-        catch
-        {
-            CopyHint.Text = "copy failed";
-        }
+        _recorder = recorder;
+        AlwaysSaveBox.IsChecked = config.AlwaysSaveSessions;
+        FmtJsonl.IsChecked = config.SaveJsonl;
+        FmtCsv.IsChecked = config.SaveCsv;
+        FmtBin.IsChecked = config.SaveBin;
+        SessionNameBox.Text = recorder.SessionName;
+        SessionResult.Text = $"Recording live → {recorder.Directory}";
     }
 
-    // ─── Export tab ─────────────────────────────────────────────────────────────
+    private void OnAlwaysSaveToggled(object sender, RoutedEventArgs e)
+    {
+        bool on = AlwaysSaveBox.IsChecked == true;
+        _config.AlwaysSaveSessions = on;
+        if (_recorder is not null) _recorder.AlwaysSave = on;
+        ConfigStore.Save(ConfigStore.DefaultPath, _config);
+    }
+
+    private void OnSaveSession(object sender, RoutedEventArgs e)
+    {
+        if (_recorder is null)
+        {
+            SessionResult.Text = "Sessions are recorded in live mode only (not during replay).";
+            return;
+        }
+
+        // Persist the chosen formats for next time.
+        _config.SaveJsonl = FmtJsonl.IsChecked == true;
+        _config.SaveCsv   = FmtCsv.IsChecked == true;
+        _config.SaveBin   = FmtBin.IsChecked == true;
+        ConfigStore.Save(ConfigStore.DefaultPath, _config);
+
+        _recorder.SessionName = SessionNameBox.Text;
+        var paths = _recorder.Save(_config.SaveJsonl, _config.SaveCsv, _config.SaveBin);
+        _recorder.StartNew();
+        SessionNameBox.Text = _recorder.SessionName;
+
+        SessionResult.Text = paths.Count == 0
+            ? "Nothing to save yet (no telemetry received)."
+            : $"Saved {paths.Count} file(s); new session started.";
+    }
+
+    // ─── Capture tab: export an existing file ────────────────────────────────────
 
     private void OnBrowseCapture(object sender, RoutedEventArgs e)
     {

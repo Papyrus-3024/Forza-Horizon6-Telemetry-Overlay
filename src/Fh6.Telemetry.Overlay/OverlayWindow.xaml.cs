@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using Fh6.Telemetry.Overlay.Interop;
 using Fh6.Telemetry.Overlay.Layouts;
 using Fh6.Telemetry.Overlay.Settings;
+using Fh6.Telemetry.Overlay.Telemetry;
 using Fh6.Telemetry.Overlay.ViewModels;
 using Fh6.Telemetry.Overlay.Widgets;
 
@@ -230,6 +231,10 @@ public partial class OverlayWindow : Window
 
     private void GearButton_Click(object sender, RoutedEventArgs e)
         => SetSettingsPinned(!_settingsPinned);
+
+    /// <summary>Gives the settings flyout the live session recorder (live mode only).</summary>
+    public void AttachRecorder(SessionRecorder recorder, OverlayConfig config)
+        => Settings.SetRecorder(recorder, config);
 
     /// <summary>Applies the flyout's edits live (same path the old modal Apply used).</summary>
     private void ApplyFromFlyout()

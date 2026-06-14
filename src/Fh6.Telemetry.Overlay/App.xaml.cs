@@ -12,6 +12,7 @@ namespace Fh6.Telemetry.Overlay;
 public partial class App : Application
 {
     private TelemetryPump? _pump;
+    private SessionRecorder? _recorder;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -31,6 +32,16 @@ public partial class App : Application
 
         var viewModel = new TelemetryViewModel();
         var window = new OverlayWindow(viewModel, config);
+
+        // Live sessions are recorded to disk (raw UDP). Replay isn't recorded — it's already a file.
+        if (replayFile is null)
+        {
+            var capturesDir = System.IO.Path.Combine(
+                System.IO.Path.GetDirectoryName(ConfigStore.DefaultPath) ?? ".", "captures");
+            _recorder = new SessionRecorder(capturesDir) { AlwaysSave = config.AlwaysSaveSessions };
+            _recorder.StartNew();
+            window.AttachRecorder(_recorder, config);
+        }
 
         StartPump(viewModel, config, replayFile, speed, window);
 
@@ -76,6 +87,8 @@ public partial class App : Application
             var honorTiming = replayFile is not null;
             var diagLabel = replayFile is not null ? "replay" : $"udp :{config.Port}";
             _pump = new TelemetryPump(source, vm, window.Dispatcher, honorTiming, speed, diagLabel);
+            if (_recorder is not null)
+                _pump.OnFrame = f => _recorder.Write(f); // tee raw frames to the session recorder
             _pump.Start();
             vm.SetStatus("");
         }
@@ -112,6 +125,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _pump?.Dispose();
+        _recorder?.Dispose(); // auto-saves the final session if "always save" is on
         base.OnExit(e);
     }
 }
