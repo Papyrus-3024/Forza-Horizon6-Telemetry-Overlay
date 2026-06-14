@@ -19,8 +19,11 @@ public partial class ChartWidget : UserControl
 
     // ── Rendering resources ──────────────────────────────────────────────────
 
-    // One Path per series id — created once, shown/hidden, geometry swapped each frame.
+    // One line Path per series id — created once, shown/hidden, geometry swapped each frame.
     private readonly Dictionary<ChartSeriesId, Path> _paths = new();
+
+    // One fill Path per series id — rendered behind the corresponding line path.
+    private readonly Dictionary<ChartSeriesId, Path> _fillPaths = new();
 
     // One TextBlock per enabled series for the live value in the legend.
     // Rebuilt in Configure; keyed by series id.
@@ -52,14 +55,33 @@ public partial class ChartWidget : UserControl
     {
         InitializeComponent();
 
-        // Pre-create one Path per series and add them all to Plot — shown/hidden by Visibility.
+        // Pre-create one fill Path and one line Path per series.
+        // Fill paths are added first (lower z-order), line paths after.
         foreach (var def in ChartSeriesCatalog.All)
         {
+            // Fill path — translucent area under the line.
+            var fillBrush = BuildFillBrush(def.Color);
+            var fillPath = new Path
+            {
+                Fill             = fillBrush,
+                Stroke           = null,
+                Visibility       = Visibility.Collapsed,
+                IsHitTestVisible = false,
+            };
+            _fillPaths[def.Id] = fillPath;
+            Plot.Children.Add(fillPath); // added first → behind line paths
+        }
+
+        foreach (var def in ChartSeriesCatalog.All)
+        {
+            // Line weight: Speed gets a slightly heavier stroke.
+            double strokeWeight = def.Id == ChartSeriesId.Speed ? 1.8 : 1.4;
+
             var path = new Path
             {
-                Stroke = new SolidColorBrush(def.Color),
-                StrokeThickness = 1.4,
-                Visibility = Visibility.Collapsed,
+                Stroke           = new SolidColorBrush(def.Color),
+                StrokeThickness  = strokeWeight,
+                Visibility       = Visibility.Collapsed,
                 IsHitTestVisible = false,
             };
             ((SolidColorBrush)path.Stroke).Freeze();
@@ -92,7 +114,9 @@ public partial class ChartWidget : UserControl
         foreach (var def in ChartSeriesCatalog.All)
         {
             bool on = ChartSeriesCatalog.IsEnabled(cfg, def.Id);
-            _paths[def.Id].Visibility = on ? Visibility.Visible : Visibility.Collapsed;
+            var vis = on ? Visibility.Visible : Visibility.Collapsed;
+            _paths[def.Id].Visibility     = vis;
+            _fillPaths[def.Id].Visibility = vis;
             if (on) _enabledSeries.Add(def);
         }
 
@@ -187,66 +211,131 @@ public partial class ChartWidget : UserControl
         // Build StreamGeometry for each enabled series using min/max decimation.
         foreach (var def in _enabledSeries)
         {
-            var path = _paths[def.Id];
+            var path     = _paths[def.Id];
+            var fillPath = _fillPaths[def.Id];
             if (path.Visibility != Visibility.Visible) continue;
 
             // Extract float values for this series into _valBuf for DecimateMinMaxIndices.
             for (int i = 0; i < count; i++)
                 _valBuf[i] = def.Select(_sampleBuf[i]);
 
-            var valSpan = new ReadOnlySpan<float>(_valBuf, 0, count);
+            var valSpan  = new ReadOnlySpan<float>(_valBuf, 0, count);
             int decCount = ChartMath.DecimateMinMaxIndices(xSpan, valSpan, targetCols, _decBuf.AsSpan());
 
+            // ── Line geometry ────────────────────────────────────────────────
             var sg = new StreamGeometry();
             using (var ctx = sg.Open())
             {
-                bool first = true;
-                int prevDecIdx = -1;
-                for (int di = 0; di < decCount; di++)
-                {
-                    int idx = _decBuf[di];
-                    double x = _xBuf[idx];
-                    float raw = _valBuf[idx];
-                    double norm = ChartMath.Normalize(raw, def.Min, def.Max);
-                    double y = (1.0 - norm) * plotH;
-
-                    if (first)
-                    {
-                        ctx.BeginFigure(new Point(x, y), isFilled: false, isClosed: false);
-                        first = false;
-                    }
-                    else if (def.Stepped)
-                    {
-                        // Stepped: horizontal segment at previous Y, then jump.
-                        int prevIdx = _decBuf[prevDecIdx];
-                        float prevRaw = _valBuf[prevIdx];
-                        double prevNorm = ChartMath.Normalize(prevRaw, def.Min, def.Max);
-                        double prevY = (1.0 - prevNorm) * plotH;
-
-                        ctx.LineTo(new Point(x, prevY), isStroked: true, isSmoothJoin: false);
-                        ctx.LineTo(new Point(x, y),     isStroked: true, isSmoothJoin: false);
-                    }
-                    else
-                    {
-                        ctx.LineTo(new Point(x, y), isStroked: true, isSmoothJoin: false);
-                    }
-
-                    prevDecIdx = di;
-                }
+                BuildLineGeometry(ctx, decCount, def, plotH, isFilled: false);
             }
-
             sg.Freeze();
             path.Data = sg;
+
+            // ── Fill geometry ────────────────────────────────────────────────
+            // Reuse the same decimated indices to trace the line, then close to baseline.
+            if (decCount > 0)
+            {
+                var fillSg = new StreamGeometry();
+                using (var ctx = fillSg.Open())
+                {
+                    // Trace the line portion as a filled+closed figure.
+                    BuildLineGeometry(ctx, decCount, def, plotH, isFilled: true);
+
+                    // Close to baseline: go to bottom-right, then bottom-left.
+                    int lastIdx  = _decBuf[decCount - 1];
+                    int firstIdx = _decBuf[0];
+                    ctx.LineTo(new Point(_xBuf[lastIdx],  plotH), isStroked: false, isSmoothJoin: false);
+                    ctx.LineTo(new Point(_xBuf[firstIdx], plotH), isStroked: false, isSmoothJoin: false);
+                }
+                fillSg.Freeze();
+                fillPath.Data = fillSg;
+            }
+            else
+            {
+                fillPath.Data = null;
+            }
         }
 
         UpdateLegend(count);
+    }
+
+    /// <summary>
+    /// Emits the decimated line points into an open StreamGeometryContext.
+    /// <paramref name="isFilled"/> controls the BeginFigure isFilled flag.
+    /// </summary>
+    private void BuildLineGeometry(
+        StreamGeometryContext ctx,
+        int decCount,
+        ChartSeriesDef def,
+        double plotH,
+        bool isFilled)
+    {
+        bool first = true;
+        int prevDecIdx = -1;
+
+        for (int di = 0; di < decCount; di++)
+        {
+            int idx    = _decBuf[di];
+            double x   = _xBuf[idx];
+            float raw  = _valBuf[idx];
+            double norm = ChartMath.Normalize(raw, def.Min, def.Max);
+            double y    = (1.0 - norm) * plotH;
+
+            if (first)
+            {
+                ctx.BeginFigure(new Point(x, y), isFilled: isFilled, isClosed: false);
+                first = false;
+            }
+            else if (def.Stepped)
+            {
+                int prevIdx     = _decBuf[prevDecIdx];
+                float prevRaw   = _valBuf[prevIdx];
+                double prevNorm = ChartMath.Normalize(prevRaw, def.Min, def.Max);
+                double prevY    = (1.0 - prevNorm) * plotH;
+
+                ctx.LineTo(new Point(x, prevY), isStroked: true, isSmoothJoin: false);
+                ctx.LineTo(new Point(x, y),     isStroked: true, isSmoothJoin: false);
+            }
+            else
+            {
+                ctx.LineTo(new Point(x, y), isStroked: true, isSmoothJoin: false);
+            }
+
+            prevDecIdx = di;
+        }
     }
 
     private void ClearPaths()
     {
         foreach (var p in _paths.Values)
             p.Data = null;
+        foreach (var p in _fillPaths.Values)
+            p.Data = null;
         UpdateLegend(0);
+    }
+
+    // ── Area fill brush ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Builds a vertical LinearGradientBrush for the area fill:
+    /// series color at ~35% alpha at the top, transparent at the bottom.
+    /// The brush is frozen (allocation-free after creation).
+    /// </summary>
+    private static LinearGradientBrush BuildFillBrush(Color seriesColor)
+    {
+        var topColor    = Color.FromArgb(0x59, seriesColor.R, seriesColor.G, seriesColor.B); // ~35%
+        var bottomColor = Color.FromArgb(0x00, seriesColor.R, seriesColor.G, seriesColor.B); // 0%
+
+        var brush = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 0),
+            EndPoint   = new Point(0, 1),
+            MappingMode = BrushMappingMode.RelativeToBoundingBox,
+        };
+        brush.GradientStops.Add(new GradientStop(topColor,    0.0));
+        brush.GradientStops.Add(new GradientStop(bottomColor, 1.0));
+        brush.Freeze();
+        return brush;
     }
 
     // ── Legend ───────────────────────────────────────────────────────────────
