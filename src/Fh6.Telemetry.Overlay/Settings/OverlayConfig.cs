@@ -77,8 +77,20 @@ public sealed class OverlayConfig
     /// <summary>Which seasonal map to display (manual; FH6 telemetry has no season field).</summary>
     public MapSeason Season { get; set; } = MapSeason.Summer;
 
-    /// <summary>Affine calibration mapping world X/Z to map pixels. Null => not yet calibrated.</summary>
+    /// <summary>Affine calibration mapping world X/Z to map pixels. Retained for config round-trip; not driven by UI.</summary>
     public MapCalibration? MapCalibration { get; set; }
+
+    /// <summary>Display pixels per source pixel for the car-centered minimap viewport.</summary>
+    public double MapZoom { get; set; } = 4.0;
+
+    /// <summary>Multiplier on the auto world-to-pixel scale. Nudge if the marker drifts in X/Z.</summary>
+    public double MapScale { get; set; } = 1.0;
+
+    /// <summary>Source-pixel nudge added to the mapped X coordinate.</summary>
+    public double MapOffsetX { get; set; } = 0.0;
+
+    /// <summary>Source-pixel nudge added to the mapped Y coordinate.</summary>
+    public double MapOffsetY { get; set; } = 0.0;
 
     /// <summary>
     /// Per-widget customization, keyed by <see cref="WidgetId.ToString()"/>.
@@ -102,6 +114,9 @@ public sealed class OverlayConfig
     public void Normalize(OverlayLayout layout)
     {
         Chart.Normalize();
+
+        MapZoom  = Math.Clamp(MapZoom,  1.0, 16.0);
+        MapScale = Math.Clamp(MapScale, 0.1, 10.0);
 
         var seeds = LayoutSeeds.For(layout);
 
