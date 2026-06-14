@@ -56,31 +56,33 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private string _lastShift  = "-";
     private string _status     = "";
 
-    public string Speed       => _speed;
-    public string SpeedMph    => _speedMph;
-    public string Gear        => _gear;
-    public string Rpm         => _rpm;
-    public string ThrottlePct => _throttlePct;
-    public string BrakePct    => _brakePct;
-    public string ClutchPct   => _clutchPct;
-    public string Boost       => _boost;
-    public string GText       => _gText;
-    public string PowerHp     => _powerHp;
-    public string TorqueLbFt  => _torqueLbFt;
-    public string Fuel        => _fuel;
-    public string LapNumber   => _lapNumber;
-    public string Position    => _position;
-    public string CurrentLap  => _currentLap;
-    public string LastLap     => _lastLap;
-    public string BestLap     => _bestLap;
-    public string LastShift   => _lastShift;
-    public string Status      => _status;
+    // Public setters exist only so WPF's TwoWay-default bindings (Run.Text, RangeBase.Value)
+    // are legal; display controls never write back. Change-notification happens in the Set* helpers.
+    public string Speed       { get => _speed;      set => _speed = value; }
+    public string SpeedMph    { get => _speedMph;   set => _speedMph = value; }
+    public string Gear        { get => _gear;       set => _gear = value; }
+    public string Rpm         { get => _rpm;        set => _rpm = value; }
+    public string ThrottlePct { get => _throttlePct; set => _throttlePct = value; }
+    public string BrakePct    { get => _brakePct;   set => _brakePct = value; }
+    public string ClutchPct   { get => _clutchPct;  set => _clutchPct = value; }
+    public string Boost       { get => _boost;      set => _boost = value; }
+    public string GText       { get => _gText;      set => _gText = value; }
+    public string PowerHp     { get => _powerHp;    set => _powerHp = value; }
+    public string TorqueLbFt  { get => _torqueLbFt; set => _torqueLbFt = value; }
+    public string Fuel        { get => _fuel;       set => _fuel = value; }
+    public string LapNumber   { get => _lapNumber;  set => _lapNumber = value; }
+    public string Position    { get => _position;   set => _position = value; }
+    public string CurrentLap  { get => _currentLap; set => _currentLap = value; }
+    public string LastLap     { get => _lastLap;    set => _lastLap = value; }
+    public string BestLap     { get => _bestLap;    set => _bestLap = value; }
+    public string LastShift   { get => _lastShift;  set => _lastShift = value; }
+    public string Status      { get => _status;     set => _status = value; }
 
     // ── World position (ground plane) ────────────────────────────────────────
     private double _worldX;
     private double _worldZ;
-    public double WorldX => _worldX;
-    public double WorldZ => _worldZ;
+    public double WorldX { get => _worldX; set => _worldX = value; }
+    public double WorldZ { get => _worldZ; set => _worldZ = value; }
 
     // ── Shift lights ─────────────────────────────────────────────────────────
     private Brush _light1 = Off;
@@ -88,11 +90,11 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private Brush _light3 = Off;
     private Brush _light4 = Off;
     private Brush _light5 = Off;
-    public Brush Light1 => _light1;
-    public Brush Light2 => _light2;
-    public Brush Light3 => _light3;
-    public Brush Light4 => _light4;
-    public Brush Light5 => _light5;
+    public Brush Light1 { get => _light1; set => _light1 = value; }
+    public Brush Light2 { get => _light2; set => _light2 = value; }
+    public Brush Light3 { get => _light3; set => _light3 = value; }
+    public Brush Light4 { get => _light4; set => _light4 = value; }
+    public Brush Light5 { get => _light5; set => _light5 = value; }
 
     // ── Animation targets (set by Update, not directly bound) ───────────────
     // These are the raw values coming off the wire at packet rate.
@@ -114,13 +116,13 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     private double _displayedGLat;
     private double _displayedGLong;
 
-    public double DisplayedRpmFraction => _displayedRpmFraction;
-    public double DisplayedThrottle    => _displayedThrottle;
-    public double DisplayedBrake       => _displayedBrake;
-    public double DisplayedClutch      => _displayedClutch;
-    public double DisplayedSteer       => _displayedSteer;
-    public double DisplayedGLat        => _displayedGLat;
-    public double DisplayedGLong       => _displayedGLong;
+    public double DisplayedRpmFraction { get => _displayedRpmFraction; set => _displayedRpmFraction = value; }
+    public double DisplayedThrottle    { get => _displayedThrottle;    set => _displayedThrottle = value; }
+    public double DisplayedBrake       { get => _displayedBrake;       set => _displayedBrake = value; }
+    public double DisplayedClutch      { get => _displayedClutch;      set => _displayedClutch = value; }
+    public double DisplayedSteer       { get => _displayedSteer;       set => _displayedSteer = value; }
+    public double DisplayedGLat        { get => _displayedGLat;        set => _displayedGLat = value; }
+    public double DisplayedGLong       { get => _displayedGLong;       set => _displayedGLong = value; }
 
     // Legacy read-only pass-throughs kept so GForceWidget DP bindings still compile.
     // The code-behind that drives the dot should bind to DisplayedGLat/GLong instead.
