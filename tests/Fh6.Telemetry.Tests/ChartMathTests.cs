@@ -136,6 +136,77 @@ public class ChartMathTests
         Assert.Equal(1, n);
     }
 
+    // ── ChartMath.DecimateMinMaxIndices ────────────────────────────────────
+
+    [Fact]
+    public void DecimateMinMaxIndices_empty_input_returns_zero()
+    {
+        var dest = new int[10];
+        Assert.Equal(0, ChartMath.DecimateMinMaxIndices(
+            ReadOnlySpan<double>.Empty, ReadOnlySpan<float>.Empty, 5, dest));
+    }
+
+    [Fact]
+    public void DecimateMinMaxIndices_single_element_returns_one()
+    {
+        double[] xs = { 0.0 };
+        float[] vs = { 42f };
+        var dest = new int[10];
+        int n = ChartMath.DecimateMinMaxIndices(xs, vs, 5, dest);
+        Assert.Equal(1, n);
+        Assert.Equal(0, dest[0]);
+    }
+
+    [Fact]
+    public void DecimateMinMaxIndices_two_in_same_bucket_emits_min_and_max()
+    {
+        // Both samples fall in the same bucket; min is index 1 (value 1), max is index 0 (value 10).
+        double[] xs = { 0.0, 0.1 };   // range tiny → same bucket
+        float[]  vs = { 10f, 1f };
+        var dest = new int[10];
+        int n = ChartMath.DecimateMinMaxIndices(xs, vs, 1, dest);
+        // One bucket → emits both min and max indices in X order (index 0 < index 1).
+        Assert.Equal(2, n);
+        // Max is at index 0, min at index 1; emitted in X order: 0 then 1.
+        Assert.Equal(0, dest[0]);
+        Assert.Equal(1, dest[1]);
+    }
+
+    [Fact]
+    public void DecimateMinMaxIndices_same_min_and_max_emits_one_per_bucket()
+    {
+        // Single unique value per bucket → min == max → only one index emitted.
+        double[] xs = { 0.0, 5.0, 10.0 };
+        float[]  vs = { 1f,  2f,  3f };
+        var dest = new int[10];
+        int n = ChartMath.DecimateMinMaxIndices(xs, vs, 3, dest);
+        // 3 samples, 3 buckets, each with a single sample → 3 indices.
+        Assert.Equal(3, n);
+    }
+
+    [Fact]
+    public void DecimateMinMaxIndices_result_indices_are_monotonically_increasing()
+    {
+        // Fill 100 samples alternating high/low to exercise min/max within buckets.
+        int len = 100;
+        double[] xs = Enumerable.Range(0, len).Select(i => (double)i).ToArray();
+        float[]  vs = Enumerable.Range(0, len).Select(i => i % 2 == 0 ? 1f : 0f).ToArray();
+        var dest = new int[len * 2];
+        int n = ChartMath.DecimateMinMaxIndices(xs, vs, 10, dest);
+        Assert.True(n > 0);
+        for (int i = 1; i < n; i++)
+            Assert.True(dest[i] > dest[i - 1], $"Indices must be strictly increasing (failed at {i})");
+    }
+
+    [Fact]
+    public void DecimateMinMaxIndices_mismatched_lengths_returns_zero()
+    {
+        double[] xs = { 0.0, 1.0 };
+        float[]  vs = { 1f };   // length mismatch
+        var dest = new int[10];
+        Assert.Equal(0, ChartMath.DecimateMinMaxIndices(xs, vs, 5, dest));
+    }
+
     // ── ChartConfig.Normalize ───────────────────────────────────────────────
 
     [Theory]
