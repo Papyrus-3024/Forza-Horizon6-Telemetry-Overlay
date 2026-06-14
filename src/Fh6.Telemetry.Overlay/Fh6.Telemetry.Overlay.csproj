@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Fh6.Telemetry.Core\Fh6.Telemetry.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp.Views.WPF" Version="3.119.4" />
+  </ItemGroup>
+
 </Project>
