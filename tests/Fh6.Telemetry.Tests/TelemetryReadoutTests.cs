@@ -94,11 +94,29 @@ public class TelemetryReadoutTests
     }
 
     [Fact]
+    public void PowerHp_clamps_negative_engine_braking_to_zero()
+    {
+        // Negative Power occurs under engine braking; in-game display shows 0.
+        var packet = new TelemetryPacket { Power = -50000f };
+        var r = new TelemetryReadout(packet);
+        Assert.Equal(0f, r.PowerHp);
+    }
+
+    [Fact]
     public void TorqueLbFt_converts_newton_metres_to_pound_feet()
     {
         // 1 N·m * 0.7375621 ≈ 0.738 lb·ft
         var packet = new TelemetryPacket { Torque = 1f };
         var r = new TelemetryReadout(packet);
         Assert.Equal(0.7376, r.TorqueLbFt, 3);
+    }
+
+    [Fact]
+    public void TorqueLbFt_clamps_negative_engine_braking_to_zero()
+    {
+        // Negative Torque occurs under engine braking; in-game display shows 0.
+        var packet = new TelemetryPacket { Torque = -200f };
+        var r = new TelemetryReadout(packet);
+        Assert.Equal(0f, r.TorqueLbFt);
     }
 }

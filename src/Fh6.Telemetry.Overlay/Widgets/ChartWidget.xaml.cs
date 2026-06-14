@@ -29,16 +29,22 @@ public partial class ChartWidget : UserControl
     // Reusable sample buffer — avoids per-frame allocation.
     private ChartSample[] _sampleBuf = Array.Empty<ChartSample>();
 
-    // Decimation index buffer.
+    // Decimation index buffer — sized to 2 × targetCols to accommodate min+max per bucket.
     private int[] _decBuf = Array.Empty<int>();
 
     // X-coordinate array reused per series (double[sampleCount]).
     private double[] _xBuf = Array.Empty<double>();
 
+    // Per-series float value buffer used by DecimateMinMaxIndices.
+    private float[] _valBuf = Array.Empty<float>();
+
     // ── Throttle state ───────────────────────────────────────────────────────
 
     private double _accumulatedDt;
     private const double RedrawIntervalSeconds = 1.0 / 28.0; // ~28 Hz
+
+    // Latest timestamp seen at the last Redraw call; skip redraw if unchanged.
+    private double _lastDrawnLatestTime = double.MinValue;
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
@@ -90,6 +96,9 @@ public partial class ChartWidget : UserControl
             if (on) _enabledSeries.Add(def);
         }
 
+        // Force a redraw after configuration change even if data hasn't advanced.
+        _lastDrawnLatestTime = double.MinValue;
+
         RebuildLegend();
     }
 
@@ -131,7 +140,11 @@ public partial class ChartWidget : UserControl
 
         if (_history is null || _history.Count == 0 || plotW <= 1 || plotH <= 1)
         {
-            ClearPaths();
+            if (_lastDrawnLatestTime != double.MinValue)
+            {
+                _lastDrawnLatestTime = double.MinValue;
+                ClearPaths();
+            }
             return;
         }
 
@@ -141,12 +154,20 @@ public partial class ChartWidget : UserControl
         int count = _history.CopyWindow(_windowSeconds, _sampleBuf);
         if (count == 0)
         {
-            ClearPaths();
+            if (_lastDrawnLatestTime != double.MinValue)
+            {
+                _lastDrawnLatestTime = double.MinValue;
+                ClearPaths();
+            }
             return;
         }
 
         // Find the latest timestamp (newest sample is last in oldest-first order).
         double latestTime = _sampleBuf[count - 1].TimeSeconds;
+
+        // Skip geometry rebuild if the data hasn't advanced since the last draw.
+        if (latestTime == _lastDrawnLatestTime) return;
+        _lastDrawnLatestTime = latestTime;
 
         // Build X array in pixel space (newest at right).
         EnsureXBuf(count);
@@ -156,28 +177,36 @@ public partial class ChartWidget : UserControl
             _xBuf[i] = plotW - tRel / _windowSeconds * plotW;
         }
 
-        // Decimate indices to ~plotW columns.
         int targetCols = Math.Max(1, (int)plotW);
-        EnsureDecBuf(targetCols + 1);
+        // DecimateMinMaxIndices can emit up to 2 indices per bucket.
+        EnsureDecBuf(targetCols * 2 + 2);
+        EnsureValBuf(count);
 
         var xSpan = new ReadOnlySpan<double>(_xBuf, 0, count);
-        int decCount = ChartMath.DecimateIndices(xSpan, targetCols, _decBuf.AsSpan());
 
-        // Build StreamGeometry for each enabled series.
+        // Build StreamGeometry for each enabled series using min/max decimation.
         foreach (var def in _enabledSeries)
         {
             var path = _paths[def.Id];
             if (path.Visibility != Visibility.Visible) continue;
 
+            // Extract float values for this series into _valBuf for DecimateMinMaxIndices.
+            for (int i = 0; i < count; i++)
+                _valBuf[i] = def.Select(_sampleBuf[i]);
+
+            var valSpan = new ReadOnlySpan<float>(_valBuf, 0, count);
+            int decCount = ChartMath.DecimateMinMaxIndices(xSpan, valSpan, targetCols, _decBuf.AsSpan());
+
             var sg = new StreamGeometry();
             using (var ctx = sg.Open())
             {
                 bool first = true;
+                int prevDecIdx = -1;
                 for (int di = 0; di < decCount; di++)
                 {
                     int idx = _decBuf[di];
                     double x = _xBuf[idx];
-                    float raw = def.Select(_sampleBuf[idx]);
+                    float raw = _valBuf[idx];
                     double norm = ChartMath.Normalize(raw, def.Min, def.Max);
                     double y = (1.0 - norm) * plotH;
 
@@ -189,21 +218,20 @@ public partial class ChartWidget : UserControl
                     else if (def.Stepped)
                     {
                         // Stepped: horizontal segment at previous Y, then jump.
-                        // We need the previous point's Y to draw the horizontal.
-                        // Compute the previous Y from the previous sample.
-                        int prevIdx = _decBuf[di - 1];
-                        float prevRaw = def.Select(_sampleBuf[prevIdx]);
+                        int prevIdx = _decBuf[prevDecIdx];
+                        float prevRaw = _valBuf[prevIdx];
                         double prevNorm = ChartMath.Normalize(prevRaw, def.Min, def.Max);
                         double prevY = (1.0 - prevNorm) * plotH;
 
-                        // Horizontal to current X at previous Y, then vertical drop.
                         ctx.LineTo(new Point(x, prevY), isStroked: true, isSmoothJoin: false);
-                        ctx.LineTo(new Point(x, y), isStroked: true, isSmoothJoin: false);
+                        ctx.LineTo(new Point(x, y),     isStroked: true, isSmoothJoin: false);
                     }
                     else
                     {
                         ctx.LineTo(new Point(x, y), isStroked: true, isSmoothJoin: false);
                     }
+
+                    prevDecIdx = di;
                 }
             }
 
@@ -311,5 +339,11 @@ public partial class ChartWidget : UserControl
     {
         if (_decBuf.Length < count)
             _decBuf = new int[count];
+    }
+
+    private void EnsureValBuf(int count)
+    {
+        if (_valBuf.Length < count)
+            _valBuf = new float[count];
     }
 }

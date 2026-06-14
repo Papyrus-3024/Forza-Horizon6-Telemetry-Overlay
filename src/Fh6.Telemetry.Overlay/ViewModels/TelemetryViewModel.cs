@@ -34,36 +34,65 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     /// <summary>Ring-buffer chart history, owned by the VM and fed on each <see cref="Update"/> call.</summary>
     public ChartHistory History { get; } = new(ChartCapacity);
 
-    // ── Discrete text / status (updated immediately in Update) ──────────────
-    public string Speed { get; set; } = "0";
-    public string SpeedMph { get; set; } = "0";
-    public string Gear { get; set; } = "N";
-    public string Rpm { get; set; } = "0 / 0";
-    public string ThrottlePct { get; set; } = "0";
-    public string BrakePct { get; set; } = "0";
-    public string ClutchPct { get; set; } = "0";
-    public string Boost { get; set; } = "0.0";
-    public string GText { get; set; } = "0.0g";
-    public string PowerHp { get; set; } = "0";
-    public string TorqueLbFt { get; set; } = "0";
-    public string Fuel { get; set; } = "0%";
-    public string LapNumber { get; set; } = "0";
-    public string Position { get; set; } = "-";
-    public string CurrentLap { get; set; } = "--:--.---";
-    public string LastLap { get; set; } = "--:--.---";
-    public string BestLap { get; set; } = "--:--.---";
-    public string LastShift { get; set; } = "-";
-    public string Status { get; set; } = "";
+    // ── Discrete text / status — explicit properties backed by private fields ─
+    // Each only raises PropertyChanged when the value actually changes.
+    private string _speed      = "0";
+    private string _speedMph   = "0";
+    private string _gear       = "N";
+    private string _rpm        = "0 / 0";
+    private string _throttlePct = "0";
+    private string _brakePct   = "0";
+    private string _clutchPct  = "0";
+    private string _boost      = "0.0";
+    private string _gText      = "0.0g";
+    private string _powerHp    = "0";
+    private string _torqueLbFt = "0";
+    private string _fuel       = "0%";
+    private string _lapNumber  = "0";
+    private string _position   = "-";
+    private string _currentLap = "--:--.---";
+    private string _lastLap    = "--:--.---";
+    private string _bestLap    = "--:--.---";
+    private string _lastShift  = "-";
+    private string _status     = "";
+
+    public string Speed       => _speed;
+    public string SpeedMph    => _speedMph;
+    public string Gear        => _gear;
+    public string Rpm         => _rpm;
+    public string ThrottlePct => _throttlePct;
+    public string BrakePct    => _brakePct;
+    public string ClutchPct   => _clutchPct;
+    public string Boost       => _boost;
+    public string GText       => _gText;
+    public string PowerHp     => _powerHp;
+    public string TorqueLbFt  => _torqueLbFt;
+    public string Fuel        => _fuel;
+    public string LapNumber   => _lapNumber;
+    public string Position    => _position;
+    public string CurrentLap  => _currentLap;
+    public string LastLap     => _lastLap;
+    public string BestLap     => _bestLap;
+    public string LastShift   => _lastShift;
+    public string Status      => _status;
 
     // ── World position (ground plane) ────────────────────────────────────────
-    public double WorldX { get; set; }
-    public double WorldZ { get; set; }
+    private double _worldX;
+    private double _worldZ;
+    public double WorldX => _worldX;
+    public double WorldZ => _worldZ;
 
-    public Brush Light1 { get; set; } = Off;
-    public Brush Light2 { get; set; } = Off;
-    public Brush Light3 { get; set; } = Off;
-    public Brush Light4 { get; set; } = Off;
-    public Brush Light5 { get; set; } = Off;
+    // ── Shift lights ─────────────────────────────────────────────────────────
+    private Brush _light1 = Off;
+    private Brush _light2 = Off;
+    private Brush _light3 = Off;
+    private Brush _light4 = Off;
+    private Brush _light5 = Off;
+    public Brush Light1 => _light1;
+    public Brush Light2 => _light2;
+    public Brush Light3 => _light3;
+    public Brush Light4 => _light4;
+    public Brush Light5 => _light5;
 
     // ── Animation targets (set by Update, not directly bound) ───────────────
     // These are the raw values coming off the wire at packet rate.
@@ -77,29 +106,40 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
 
     // ── Displayed (smoothed) values — bound by widgets ──────────────────────
     // Bars and dot read these; they lag the targets by the easing factor.
-    public double DisplayedRpmFraction { get; private set; }
-    public double DisplayedThrottle    { get; private set; }
-    public double DisplayedBrake       { get; private set; }
-    public double DisplayedClutch      { get; private set; }
-    public double DisplayedSteer       { get; private set; }
-    public double DisplayedGLat        { get; private set; }
-    public double DisplayedGLong       { get; private set; }
+    private double _displayedRpmFraction;
+    private double _displayedThrottle;
+    private double _displayedBrake;
+    private double _displayedClutch;
+    private double _displayedSteer;
+    private double _displayedGLat;
+    private double _displayedGLong;
+
+    public double DisplayedRpmFraction => _displayedRpmFraction;
+    public double DisplayedThrottle    => _displayedThrottle;
+    public double DisplayedBrake       => _displayedBrake;
+    public double DisplayedClutch      => _displayedClutch;
+    public double DisplayedSteer       => _displayedSteer;
+    public double DisplayedGLat        => _displayedGLat;
+    public double DisplayedGLong       => _displayedGLong;
 
     // Legacy read-only pass-throughs kept so GForceWidget DP bindings still compile.
     // The code-behind that drives the dot should bind to DisplayedGLat/GLong instead.
-    public double GLat  => DisplayedGLat;
-    public double GLong => DisplayedGLong;
+    public double GLat  => _displayedGLat;
+    public double GLong => _displayedGLong;
 
     // Easing rate: displayed value moves (rate * dt) of the way to target each frame.
     // rate=12 means ~63% of the gap closes in 1/12 s ≈ 83 ms — feels fluid at 60 Hz.
     private const double EaseRate = 12.0;
 
+    // Epsilon for eased-double change detection: below this the visual delta is imperceptible.
+    private const double SmoothedEpsilon = 1e-3;
+
     public void Update(in TelemetryReadout r)
     {
-        Speed = $"{r.SpeedKmh:F0}";
-        SpeedMph = $"{r.SpeedMph:F0}";
-        Gear = r.Gear == 0 ? "R" : r.Gear.ToString();
-        Rpm = $"{r.Rpm:F0} / {r.MaxRpm:F0}";
+        SetStr(ref _speed,      $"{r.SpeedKmh:F0}",   nameof(Speed));
+        SetStr(ref _speedMph,   $"{r.SpeedMph:F0}",   nameof(SpeedMph));
+        SetStr(ref _gear,       r.Gear == 0 ? "R" : r.Gear.ToString(), nameof(Gear));
+        SetStr(ref _rpm,        $"{r.Rpm:F0} / {r.MaxRpm:F0}", nameof(Rpm));
 
         // Set animation targets (bars will ease toward these)
         _targetRpmFraction = r.RpmFraction;
@@ -110,34 +150,35 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         _targetGLat        = r.LatG;
         _targetGLong       = r.LongG;
 
-        ThrottlePct = $"{r.ThrottleFraction * 100:F0}";
-        BrakePct = $"{r.BrakeFraction * 100:F0}";
-        ClutchPct = $"{r.ClutchFraction * 100:F0}";
-        Boost = $"{r.Boost:F1}";
-        GText = $"{Math.Sqrt(r.LatG * r.LatG + r.LongG * r.LongG):F1}g";
-        PowerHp     = $"{r.PowerHp:F0}";
-        TorqueLbFt  = $"{r.TorqueLbFt:F0}";
-        Fuel = $"{r.FuelPercent:F0}%";
-        LapNumber = r.LapNumber.ToString();
-        Position = r.RacePosition.ToString();
-        CurrentLap = LapTime.Format(r.CurrentLap);
-        LastLap = LapTime.Format(r.LastLap);
-        BestLap = LapTime.Format(r.BestLap);
+        SetStr(ref _throttlePct, $"{r.ThrottleFraction * 100:F0}", nameof(ThrottlePct));
+        SetStr(ref _brakePct,    $"{r.BrakeFraction * 100:F0}",    nameof(BrakePct));
+        SetStr(ref _clutchPct,   $"{r.ClutchFraction * 100:F0}",   nameof(ClutchPct));
+        SetStr(ref _boost,       $"{r.Boost:F1}",                  nameof(Boost));
+        SetStr(ref _gText,       $"{Math.Sqrt(r.LatG * r.LatG + r.LongG * r.LongG):F1}g", nameof(GText));
+        SetStr(ref _powerHp,     $"{r.PowerHp:F0}",                nameof(PowerHp));
+        SetStr(ref _torqueLbFt,  $"{r.TorqueLbFt:F0}",            nameof(TorqueLbFt));
+        SetStr(ref _fuel,        $"{r.FuelPercent:F0}%",           nameof(Fuel));
+        SetStr(ref _lapNumber,   r.LapNumber.ToString(),           nameof(LapNumber));
+        SetStr(ref _position,    r.RacePosition.ToString(),        nameof(Position));
+        SetStr(ref _currentLap,  LapTime.Format(r.CurrentLap),     nameof(CurrentLap));
+        SetStr(ref _lastLap,     LapTime.Format(r.LastLap),        nameof(LastLap));
+        SetStr(ref _bestLap,     LapTime.Format(r.BestLap),        nameof(BestLap));
 
-        WorldX = r.PositionX;
-        WorldZ = r.PositionZ;
+        // World position: any change in the raw float is meaningful (minimap accuracy).
+        SetDouble(ref _worldX, r.PositionX, nameof(WorldX));
+        SetDouble(ref _worldZ, r.PositionZ, nameof(WorldZ));
 
         var shift = GearShifts.Detect(_prevGear, r.Gear);
-        if (shift == ShiftDirection.Up) LastShift = $"up -> {r.Gear}";
-        else if (shift == ShiftDirection.Down) LastShift = $"down -> {r.Gear}";
+        if (shift == ShiftDirection.Up)        SetStr(ref _lastShift, $"up -> {r.Gear}",   nameof(LastShift));
+        else if (shift == ShiftDirection.Down) SetStr(ref _lastShift, $"down -> {r.Gear}", nameof(LastShift));
         _prevGear = r.Gear;
 
         int stage = r.ShiftLightStage;
-        Light1 = stage >= 1 ? OnLight1 : Off;
-        Light2 = stage >= 2 ? OnLight2 : Off;
-        Light3 = stage >= 3 ? OnLight3 : Off;
-        Light4 = stage >= 4 ? OnLight4 : Off;
-        Light5 = stage >= 5 ? OnLight5 : Off;
+        SetBrush(ref _light1, stage >= 1 ? OnLight1 : Off, nameof(Light1));
+        SetBrush(ref _light2, stage >= 2 ? OnLight2 : Off, nameof(Light2));
+        SetBrush(ref _light3, stage >= 3 ? OnLight3 : Off, nameof(Light3));
+        SetBrush(ref _light4, stage >= 4 ? OnLight4 : Off, nameof(Light4));
+        SetBrush(ref _light5, stage >= 5 ? OnLight5 : Off, nameof(Light5));
 
         // Chart history: reset on the falling edge of IsRaceOn (menu/rewind), then sample.
         if (_prevIsRaceOn && !r.IsRaceOn)
@@ -145,80 +186,77 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         if (r.IsRaceOn)
             History.Add(r, r.TimestampMs);
         _prevIsRaceOn = r.IsRaceOn;
-
-        RaiseDiscrete();
     }
 
     /// <summary>
     /// Called once per rendered frame from CompositionTarget.Rendering in OverlayWindow.
-    /// Eases each displayed value toward its target and fires PropertyChanged for the
-    /// smoothed props so widgets re-render. Allocation-free hot path.
+    /// Eases each displayed value toward its target and fires PropertyChanged only when a
+    /// value has meaningfully changed. Allocation-free hot path.
     /// </summary>
     public void Tick(double dtSeconds)
     {
         // alpha = fraction of gap to close this frame; clamped to [0,1]
         double alpha = Math.Clamp(dtSeconds * EaseRate, 0.0, 1.0);
 
-        DisplayedRpmFraction = Ease(DisplayedRpmFraction, _targetRpmFraction, alpha);
-        DisplayedThrottle    = Ease(DisplayedThrottle,    _targetThrottle,    alpha);
-        DisplayedBrake       = Ease(DisplayedBrake,       _targetBrake,       alpha);
-        DisplayedClutch      = Ease(DisplayedClutch,      _targetClutch,      alpha);
-        DisplayedSteer       = Ease(DisplayedSteer,       _targetSteer,       alpha);
-        DisplayedGLat        = Ease(DisplayedGLat,        _targetGLat,        alpha);
-        DisplayedGLong       = Ease(DisplayedGLong,       _targetGLong,       alpha);
+        EaseAndRaise(ref _displayedRpmFraction, _targetRpmFraction, alpha, nameof(DisplayedRpmFraction));
+        EaseAndRaise(ref _displayedThrottle,    _targetThrottle,    alpha, nameof(DisplayedThrottle));
+        EaseAndRaise(ref _displayedBrake,       _targetBrake,       alpha, nameof(DisplayedBrake));
+        EaseAndRaise(ref _displayedClutch,      _targetClutch,      alpha, nameof(DisplayedClutch));
+        EaseAndRaise(ref _displayedSteer,       _targetSteer,       alpha, nameof(DisplayedSteer));
 
-        RaiseSmoothed();
+        bool gLatChanged  = EaseAndRaise(ref _displayedGLat,  _targetGLat,  alpha, nameof(DisplayedGLat));
+        bool gLongChanged = EaseAndRaise(ref _displayedGLong, _targetGLong, alpha, nameof(DisplayedGLong));
+
+        // GLat/GLong are pass-through aliases; notify only if the underlying values changed.
+        if (gLatChanged)  PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GLat)));
+        if (gLongChanged) PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GLong)));
     }
 
     /// <summary>Sets a status line (e.g. a telemetry-source error) and notifies the UI.</summary>
     public void SetStatus(string status)
     {
-        Status = status;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Status)));
+        SetStr(ref _status, status, nameof(Status));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    // ── Change-guarded helpers ───────────────────────────────────────────────
+
+    // Writes the value to the backing field and raises PropertyChanged only when changed.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static double Ease(double current, double target, double alpha)
-        => current + (target - current) * alpha;
-
-    // Raise for all discrete (text / brush) props — called from Update at packet rate.
-    private void RaiseDiscrete()
+    private void SetStr(ref string field, string value, string propName)
     {
-        foreach (var name in DiscreteNames)
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        if (value == field) return;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
 
-    // Raise for the smoothed display props — called from Tick at render rate.
-    private void RaiseSmoothed()
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetDouble(ref double field, double value, string propName)
     {
-        foreach (var name in SmoothedNames)
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        if (value == field) return;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
     }
 
-    private static readonly string[] DiscreteNames =
+    // Brushes are frozen singletons — reference equality is the right comparison.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void SetBrush(ref Brush field, Brush value, string propName)
     {
-        nameof(Speed), nameof(SpeedMph), nameof(Gear), nameof(Rpm),
-        nameof(ThrottlePct), nameof(BrakePct), nameof(ClutchPct),
-        nameof(Boost), nameof(Fuel), nameof(LapNumber), nameof(Position),
-        nameof(CurrentLap), nameof(LastLap), nameof(BestLap), nameof(LastShift),
-        nameof(Light1), nameof(Light2), nameof(Light3), nameof(Light4), nameof(Light5),
-        nameof(GText), nameof(PowerHp), nameof(TorqueLbFt),
-        nameof(WorldX), nameof(WorldZ),
-    };
+        if (ReferenceEquals(value, field)) return;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+    }
 
-    private static readonly string[] SmoothedNames =
+    // Eases current toward target, writes back, raises PropertyChanged if the
+    // delta exceeds SmoothedEpsilon. Returns true if it raised.
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool EaseAndRaise(ref double field, double target, double alpha, string propName)
     {
-        nameof(DisplayedRpmFraction),
-        nameof(DisplayedThrottle),
-        nameof(DisplayedBrake),
-        nameof(DisplayedClutch),
-        nameof(DisplayedSteer),
-        nameof(DisplayedGLat),
-        nameof(DisplayedGLong),
-        // Also raise GLat/GLong so GForceWidget DP binding (which targets these) stays live.
-        nameof(GLat),
-        nameof(GLong),
-    };
+        double next = field + (target - field) * alpha;
+        if (Math.Abs(next - field) < SmoothedEpsilon) return false;
+        field = next;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        return true;
+    }
 }
