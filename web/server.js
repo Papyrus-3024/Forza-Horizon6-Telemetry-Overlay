@@ -18,6 +18,7 @@ const MIME = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.jsonl': 'application/x-ndjson; charset=utf-8',
+  '.bin': 'application/octet-stream',
   '.avif': 'image/avif',
   '.png': 'image/png',
   '.svg': 'image/svg+xml',
@@ -60,7 +61,12 @@ const server = createServer(async (req, res) => {
   if (pathname === '/api/captures') {
     try {
       const entries = await readdir(CAPTURES_DIR);
-      const list = entries.filter((n) => n.toLowerCase().endsWith('.jsonl')).sort();
+      const list = entries
+        .filter((n) => {
+          const lower = n.toLowerCase();
+          return lower.endsWith('.jsonl') || lower.endsWith('.bin');
+        })
+        .sort();
       send(res, 200, JSON.stringify(list), { 'Content-Type': MIME['.json'] });
     } catch {
       send(res, 200, '[]', { 'Content-Type': MIME['.json'] });
@@ -72,7 +78,8 @@ const server = createServer(async (req, res) => {
   if (pathname.startsWith('/api/capture/')) {
     const name = pathname.slice('/api/capture/'.length);
     const filePath = safeJoin(CAPTURES_DIR, name);
-    if (!filePath || !filePath.toLowerCase().endsWith('.jsonl')) {
+    const lower = filePath ? filePath.toLowerCase() : '';
+    if (!filePath || (!lower.endsWith('.jsonl') && !lower.endsWith('.bin'))) {
       send(res, 400, 'Bad capture name', { 'Content-Type': 'text/plain' });
       return;
     }
