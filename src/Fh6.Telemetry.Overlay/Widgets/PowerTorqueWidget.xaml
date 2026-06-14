@@ -3,9 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="200"
              TextOptions.TextFormattingMode="Display">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="12,8">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="12,8">
         <StackPanel>
 
             <!-- Power row -->
@@ -36,6 +40,9 @@
                                     <GradientStop Color="#FF2BFFA0" Offset="1"/>
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
+                            <Rectangle.Effect>
+                                <DropShadowEffect Color="#4FD1A5" BlurRadius="7" ShadowDepth="0" Opacity="0.7"/>
+                            </Rectangle.Effect>
                         </Rectangle>
                     </Grid>
                 </Border>
@@ -72,11 +79,15 @@
                                     <GradientStop Color="#FFFFD060" Offset="1"/>
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
+                            <Rectangle.Effect>
+                                <DropShadowEffect Color="#FFD060" BlurRadius="7" ShadowDepth="0" Opacity="0.7"/>
+                            </Rectangle.Effect>
                         </Rectangle>
                     </Grid>
                 </Border>
             </StackPanel>
 
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

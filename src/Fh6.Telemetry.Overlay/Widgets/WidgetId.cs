@@ -17,4 +17,5 @@ public enum WidgetId
     SteeringHorizon,
     FuelArc,
     SpeedSlipstream,
+    ArcTach,
 }

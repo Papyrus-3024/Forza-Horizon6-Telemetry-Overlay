@@ -14,7 +14,7 @@ public partial class SpeedTapeWidget : UserControl
 {
     // Pixels per 1 mph on the tape.
     private const double PixelsPerMph = 2.0;
-    // Tape centre Y in the Canvas coordinate space (half of the 160 px height).
+    // Centre Y of the visible 160 px window (where the current speed is pinned).
     private const double CentreY = 80.0;
     // Tick spacing: minor every 5 mph, major every 20 mph.
     private const int MinorStep = 5;
@@ -22,6 +22,9 @@ public partial class SpeedTapeWidget : UserControl
     // Range to pre-render: 0..300 mph covers any Forza scenario.
     private const int TapeMin = 0;
     private const int TapeMax = 300;
+    // Full canvas height holding the whole range with all-positive coords:
+    // v=TapeMax sits at y=0 (top), v=TapeMin at y=TapeHeightPx (bottom).
+    private const double TapeHeightPx = (TapeMax - TapeMin) * PixelsPerMph;
 
     public SpeedTapeWidget()
     {
@@ -37,11 +40,13 @@ public partial class SpeedTapeWidget : UserControl
         var labelBrush   = (Brush)Application.Current.Resources["Fh6.TextSecondary"];
         var dimBrush     = (Brush)Application.Current.Resources["Fh6.TextLabel"];
 
+        TapeCanvas.Height = TapeHeightPx;
+
         for (int v = TapeMin; v <= TapeMax; v += MinorStep)
         {
             bool major = v % MajorStep == 0;
-            // Y increases downward; speed=0 at the bottom of the tape.
-            double y = CentreY - v * PixelsPerMph;
+            // All-positive canvas Y: highest speed at the top, 0 mph at the bottom.
+            double y = (TapeMax - v) * PixelsPerMph;
 
             // Tick mark (right-aligned in the 90px canvas)
             var tick = new Rectangle
@@ -97,12 +102,11 @@ public partial class SpeedTapeWidget : UserControl
 
         if (!double.TryParse(vm.SpeedMph, out double mph))
             mph = 0.0;
-        mph = Math.Max(0.0, mph);
+        mph = Math.Clamp(mph, TapeMin, TapeMax);
 
-        // Translate the canvas so that "mph" aligns with CentreY.
-        // At speed=0 the v=0 tick is at canvas Y=CentreY (no translation).
-        // As speed grows, we translate upward (negative Y) to bring the tick up.
-        TapeTranslate.Y = mph * PixelsPerMph;
+        // Slide the tall canvas so the current-speed tick lands on the window centre.
+        // tickY(mph) = (TapeMax - mph) * PixelsPerMph; screenY = tickY + translateY = CentreY.
+        TapeTranslate.Y = CentreY - (TapeMax - mph) * PixelsPerMph;
 
         CursorText.Text = ((int)Math.Round(mph)).ToString();
     }

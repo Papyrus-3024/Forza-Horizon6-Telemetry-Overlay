@@ -45,6 +45,7 @@ public static class LayoutSeeds
             [WidgetId.SteeringHorizon] = new( 424,   8, Visible: false),
             [WidgetId.FuelArc]         = new( 530,   8, Visible: false),
             [WidgetId.SpeedSlipstream] = new(  98,   8, Visible: false),
+            [WidgetId.ArcTach]         = new(  98,   8, Visible: false),
         };
 
     // CornerPanel: clean stacked cluster near top-left, ~10px gaps, all on-screen.
@@ -74,6 +75,7 @@ public static class LayoutSeeds
             [WidgetId.SteeringHorizon] = new(  8, 730, Visible: false),
             [WidgetId.FuelArc]         = new(114, 730, Visible: false),
             [WidgetId.SpeedSlipstream] = new(  8, 870, Visible: false),
+            [WidgetId.ArcTach]         = new(  8, 730, Visible: false),
         };
 
     // CenterDash: key widgets centered at ~960px on a 1920-wide screen.
@@ -83,16 +85,20 @@ public static class LayoutSeeds
     private static readonly IReadOnlyDictionary<WidgetId, WidgetSeed> CenterDash =
         new Dictionary<WidgetId, WidgetSeed>
         {
-            [WidgetId.PedalsSteer] = new(860, 816),
-            [WidgetId.RpmShift]    = new(966, 764),
-            [WidgetId.Gear]        = new(966, 840),
-            [WidgetId.Speed]       = new(1056, 840),
-            [WidgetId.LapTiming]   = new(1180, 816),
-            [WidgetId.Boost]       = new(860,  900, Visible: false),
+            // Bottom-centre cluster (V2): arc-tach centrepiece | speed/steer | pedals,
+            // with lap timing to the left. The arc-tach shows the gear and rpm, so the
+            // standalone Gear and RpmShift widgets are hidden here.
+            [WidgetId.ArcTach]     = new(700, 808),
+            [WidgetId.Speed]       = new(896, 836),
+            [WidgetId.PedalsSteer] = new(1016, 812),
+            [WidgetId.LapTiming]   = new(1140, 816),
+            [WidgetId.Gear]        = new(966, 840, Visible: false),
+            [WidgetId.RpmShift]    = new(966, 764, Visible: false),
+            [WidgetId.Boost]       = new(860,  960, Visible: false),
             [WidgetId.GForce]      = new(860,  990, Visible: false),
             [WidgetId.PowerTorque] = new(972,  990, Visible: false),
             [WidgetId.Tire]        = new(1180, 900, Visible: false),
-            [WidgetId.Chart]       = new(640,  900, Visible: false),
+            [WidgetId.Chart]       = new(640,  960, Visible: false),
             [WidgetId.SpeedTape]       = new(1056, 840, Visible: false),
             [WidgetId.ShiftLadder]     = new( 966, 764, Visible: false),
             [WidgetId.SteeringHorizon] = new( 860, 990, Visible: false),

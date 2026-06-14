@@ -19,10 +19,14 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="14,8"
-            ClipToBounds="True">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="14,8"
+                ClipToBounds="True">
         <StackPanel>
             <TextBlock Text="GEAR"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
@@ -39,5 +43,6 @@
                 </TextBlock>
             </Grid>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

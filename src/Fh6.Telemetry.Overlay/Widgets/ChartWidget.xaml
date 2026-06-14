@@ -3,9 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="320" Height="180"
              TextOptions.TextFormattingMode="Display">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="8,6">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="8,6">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -33,5 +37,6 @@
                         Margin="6,16,0,0"
                         VerticalAlignment="Top"/>
         </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

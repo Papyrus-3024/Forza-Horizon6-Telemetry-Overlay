@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
 
@@ -58,12 +59,19 @@ public partial class BoostWidget : UserControl
     private const double PeakHoldMs   = 3000.0;
     private const double PeakDecayMs  = 1500.0;
 
+    // Color-matched glow halo on the fill arc (updated as boost sign changes).
+    private readonly DropShadowEffect _glow = new() { ShadowDepth = 0, BlurRadius = 9, Opacity = 0.8 };
+
     // ── Constructor ───────────────────────────────────────────────────────────
+
+    // Arc centre/radius, recomputed only when the size changes.
+    private double _cx, _cy, _r;
 
     public BoostWidget()
     {
         InitializeComponent();
-        Loaded += (_, _) => Redraw();
+        FillArc.Effect = _glow;
+        Loaded += (_, _) => Layout();
     }
 
     // ── Property / size change ────────────────────────────────────────────────
@@ -71,22 +79,40 @@ public partial class BoostWidget : UserControl
     private static void OnBoostChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((BoostWidget)d).Redraw();
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Redraw();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Layout();
 
-    // ── Redraw ────────────────────────────────────────────────────────────────
+    // ── Static layout (size-dependent only) ────────────────────────────────────
 
-    private void Redraw()
+    private void Layout()
     {
         double w = ArcField.Width;
         double h = ArcField.Height;
         if (w <= 0 || h <= 0) return;
 
-        double cx = w / 2.0;
-        double cy = h / 2.0 + 4.0; // shift center down slightly so arc is visible
-        double r  = Math.Min(w, h) / 2.0 - 6.0;
+        _cx = w / 2.0;
+        _cy = h / 2.0 + 4.0; // shift center down slightly so arc is visible
+        _r  = Math.Min(w, h) / 2.0 - 6.0;
 
-        // ── Track arc (full range, dim) ───────────────────────────────────────
-        TrackArc.Data = ArcPath(cx, cy, r, StartDeg, SweepDeg);
+        // Track arc (full range, dim) never changes with boost — build once per size.
+        TrackArc.Data = ArcPath(_cx, _cy, _r, StartDeg, SweepDeg);
+
+        // Position center block in the canvas (static).
+        double blockW = 50;
+        double blockH = 36;
+        Canvas.SetLeft(CenterBlock, _cx - blockW / 2.0);
+        Canvas.SetTop(CenterBlock,  _cy - blockH / 2.0 - 4.0);
+        CenterBlock.Width = blockW;
+
+        Redraw();
+    }
+
+    // ── Redraw (per-frame value update) ─────────────────────────────────────────
+
+    private void Redraw()
+    {
+        if (_r <= 0) return;
+
+        double cx = _cx, cy = _cy, r = _r;
 
         // ── Fill arc ──────────────────────────────────────────────────────────
         double boostRaw = double.IsNaN(DisplayedBoostRaw) ? 0.0 : DisplayedBoostRaw;
@@ -99,6 +125,9 @@ public partial class BoostWidget : UserControl
         {
             FillArc.Data   = ArcPath(cx, cy, r, StartDeg, fillDeg);
             FillArc.Stroke = boostClamped >= 0 ? PositiveBrush : VacuumBrush;
+            _glow.Color    = boostClamped >= 0
+                ? Color.FromRgb(0x6F, 0xB6, 0xFF)
+                : Color.FromRgb(0xE0, 0xC9, 0x3A);
             FillArc.Visibility = Visibility.Visible;
         }
         else
@@ -108,13 +137,6 @@ public partial class BoostWidget : UserControl
 
         // ── Center label ──────────────────────────────────────────────────────
         BoostValue.Text = $"{boostRaw:F1}";
-
-        // Position center block in the canvas
-        double blockW = 50;
-        double blockH = 36;
-        Canvas.SetLeft(CenterBlock, cx - blockW / 2.0);
-        Canvas.SetTop(CenterBlock,  cy - blockH / 2.0 - 4.0);
-        CenterBlock.Width = blockW;
 
         // ── Peak tick ─────────────────────────────────────────────────────────
         UpdatePeak(boostRaw, cx, cy, r);

@@ -4,9 +4,13 @@
              Width="104" Height="110"
              SizeChanged="OnSizeChanged"
              TextOptions.TextFormattingMode="Display">
-    <Border Background="{DynamicResource Fh6.Surface}"
-            BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
-            CornerRadius="10" Padding="8,6">
+    <Grid>
+        <!-- Shadow + surface layer (no text → keeps content ClearType crisp) -->
+        <Border Background="{DynamicResource Fh6.Surface}"
+                BorderBrush="{DynamicResource Fh6.Border}" BorderThickness="1"
+                CornerRadius="10" Effect="{StaticResource Fh6.PanelShadow}" CacheMode="BitmapCache"/>
+        <!-- Content layer -->
+        <Border CornerRadius="10" Padding="8,6">
         <StackPanel>
             <TextBlock Text="G-FORCE"
                        Foreground="{DynamicResource Fh6.TextSecondary}" FontSize="9" FontFamily="Consolas"
@@ -30,5 +34,6 @@
                        Foreground="{DynamicResource Fh6.TextPrimary}" FontSize="10" FontWeight="Bold" FontFamily="Consolas"
                        HorizontalAlignment="Center" Margin="0,3,0,0"/>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
@@ -72,10 +73,14 @@ public partial class GForceWidget : UserControl
 
     // ── Constructor ──────────────────────────────────────────────────────────
 
+    // Glow halo on the live dot, recolored to match the semantic grip color.
+    private readonly DropShadowEffect _dotGlow = new() { ShadowDepth = 0, BlurRadius = 11, Opacity = 0.85 };
+
     public GForceWidget()
     {
         InitializeComponent();
         BuildOverlayShapes();
+        Dot.Effect = _dotGlow;
     }
 
     // ── Shape setup ──────────────────────────────────────────────────────────
@@ -192,9 +197,11 @@ public partial class GForceWidget : UserControl
         double mag = Math.Sqrt(rawLat * rawLat + rawLong * rawLong);
 
         // Semantic grip color (not theme accent): green inside, amber near, red beyond the 1g ring.
-        Dot.Fill = mag > 1.0 ? FallbackDanger
-                 : mag > 0.85 ? FallbackWarn
-                 : FallbackGood;
+        var dotBrush = mag > 1.0 ? FallbackDanger
+                     : mag > 0.85 ? FallbackWarn
+                     : FallbackGood;
+        Dot.Fill      = dotBrush;
+        _dotGlow.Color = dotBrush.Color;
 
         // ── Tether ────────────────────────────────────────────────────────────
         if (_tether is not null)

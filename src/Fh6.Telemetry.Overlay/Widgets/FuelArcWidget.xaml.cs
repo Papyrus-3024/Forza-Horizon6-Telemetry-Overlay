@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace Fh6.Telemetry.Overlay.Widgets;
 
@@ -42,10 +43,17 @@ public partial class FuelArcWidget : UserControl
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
+    // Color-matched glow halo on the fill arc.
+    private readonly DropShadowEffect _glow = new() { ShadowDepth = 0, BlurRadius = 9, Opacity = 0.8 };
+
+    // Arc centre/radius, recomputed only when the size changes.
+    private double _cx, _cy, _r;
+
     public FuelArcWidget()
     {
         InitializeComponent();
-        Loaded += (_, _) => Redraw();
+        FillArc.Effect = _glow;
+        Loaded += (_, _) => Layout();
     }
 
     // ── Callbacks ─────────────────────────────────────────────────────────────
@@ -53,22 +61,40 @@ public partial class FuelArcWidget : UserControl
     private static void OnFuelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         => ((FuelArcWidget)d).Redraw();
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Redraw();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => Layout();
 
-    // ── Redraw ────────────────────────────────────────────────────────────────
+    // ── Static layout (size-dependent only) ────────────────────────────────────
 
-    private void Redraw()
+    private void Layout()
     {
         double w = ArcField.Width;
         double h = ArcField.Height;
         if (w <= 0 || h <= 0) return;
 
-        double cx = w / 2.0;
-        double cy = h / 2.0 + 4.0;
-        double r  = Math.Min(w, h) / 2.0 - 6.0;
+        _cx = w / 2.0;
+        _cy = h / 2.0 + 4.0;
+        _r  = Math.Min(w, h) / 2.0 - 6.0;
 
-        // Track arc (dim full ring).
-        TrackArc.Data = ArcPath(cx, cy, r, StartDeg, SweepDeg);
+        // Track arc (dim full ring) never changes with fuel — build once per size.
+        TrackArc.Data = ArcPath(_cx, _cy, _r, StartDeg, SweepDeg);
+
+        // Centre block position (static).
+        double blockW = 50;
+        double blockH = 36;
+        Canvas.SetLeft(CenterBlock, _cx - blockW / 2.0);
+        Canvas.SetTop(CenterBlock,  _cy - blockH / 2.0 - 4.0);
+        CenterBlock.Width = blockW;
+
+        Redraw();
+    }
+
+    // ── Redraw (per-frame value update) ─────────────────────────────────────────
+
+    private void Redraw()
+    {
+        if (_r <= 0) return;
+
+        double cx = _cx, cy = _cy, r = _r;
 
         double fraction = Math.Clamp(double.IsNaN(FuelFraction) ? 0.0 : FuelFraction, 0.0, 1.0);
         double fillDeg  = fraction * SweepDeg;
@@ -76,9 +102,11 @@ public partial class FuelArcWidget : UserControl
         if (fillDeg > 0.5)
         {
             FillArc.Data   = ArcPath(cx, cy, r, StartDeg, fillDeg);
-            FillArc.Stroke = fraction <= CriticalThreshold ? BrushCritical
+            var fillColor  = fraction <= CriticalThreshold ? BrushCritical
                            : fraction <= LowThreshold      ? BrushAmber
                                                            : BrushHealthy;
+            FillArc.Stroke = fillColor;
+            _glow.Color    = fillColor.Color;
             FillArc.Visibility = Visibility.Visible;
         }
         else
@@ -88,12 +116,6 @@ public partial class FuelArcWidget : UserControl
 
         // Centre label.
         FuelValue.Text = $"{fraction * 100:F0}";
-
-        double blockW = 50;
-        double blockH = 36;
-        Canvas.SetLeft(CenterBlock, cx - blockW / 2.0);
-        Canvas.SetTop(CenterBlock,  cy - blockH / 2.0 - 4.0);
-        CenterBlock.Width = blockW;
     }
 
     // ── Arc geometry ──────────────────────────────────────────────────────────
