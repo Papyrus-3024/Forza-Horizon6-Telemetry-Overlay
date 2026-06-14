@@ -5,9 +5,15 @@ using Fh6.Telemetry.Overlay.Widgets;
 
 namespace Fh6.Telemetry.Overlay.Settings;
 
-public partial class SettingsWindow : Window
+/// <summary>
+/// In-overlay settings panel (replaces the old modal SettingsWindow). Hosts the full
+/// settings, reorganized into sections. Raises <see cref="ApplyRequested"/> when the user
+/// applies (the host writes config + re-applies live) and <see cref="CloseRequested"/> when
+/// dismissed. Logic mirrors the former SettingsWindow; only the host plumbing changed.
+/// </summary>
+public partial class SettingsFlyout : UserControl
 {
-    private readonly OverlayConfig _config;
+    private OverlayConfig _config = null!;
 
     private sealed record WidgetRow(CheckBox VisibleBox, Slider ScaleSlider, WidgetId Id);
     private readonly List<WidgetRow> _widgetRows = new();
@@ -15,9 +21,16 @@ public partial class SettingsWindow : Window
     private sealed record ChartSeriesRow(CheckBox EnabledBox, ChartSeriesId Id);
     private readonly List<ChartSeriesRow> _chartSeriesRows = new();
 
-    public SettingsWindow(OverlayConfig config)
+    /// <summary>Raised after the form is written into the config; host applies it live.</summary>
+    public event EventHandler? ApplyRequested;
+    /// <summary>Raised when the user dismisses the panel.</summary>
+    public event EventHandler? CloseRequested;
+
+    public SettingsFlyout() => InitializeComponent();
+
+    /// <summary>Populates the controls from <paramref name="config"/>. Call once after construction.</summary>
+    public void Load(OverlayConfig config)
     {
-        InitializeComponent();
         _config = config;
 
         PortBox.Text = config.Port.ToString();
@@ -34,73 +47,44 @@ public partial class SettingsWindow : Window
             : "DarkGlass";
         CustomAccentBox.Text = config.CustomAccent ?? string.Empty;
 
-        // Ensure all widget keys exist before reading them.
         config.Normalize(config.Layout);
 
+        WidgetRows.Children.Clear();
+        _widgetRows.Clear();
         foreach (WidgetId id in Enum.GetValues<WidgetId>())
         {
             var wc = _config.Widgets[id.ToString()];
 
-            var nameBlock = new TextBlock
-            {
-                Text = id.ToString(),
-                Width = 90,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-
-            var visibleBox = new CheckBox
-            {
-                IsChecked = wc.Visible,
-                Content = "Visible",
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(4, 0, 8, 0),
-            };
-
-            var scaleLabel = new TextBlock
-            {
-                Text = "Scale",
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 4, 0),
-            };
-
+            var nameBlock = new TextBlock { Text = id.ToString(), Width = 110, VerticalAlignment = VerticalAlignment.Center };
+            var visibleBox = new CheckBox { IsChecked = wc.Visible, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) };
             var scaleSlider = new Slider
             {
-                Minimum = 0.5,
-                Maximum = 2.5,
-                TickFrequency = 0.05,
-                IsSnapToTickEnabled = true,
-                Value = wc.Scale,
-                Width = 90,
-                VerticalAlignment = VerticalAlignment.Center,
+                Minimum = 0.5, Maximum = 2.5, TickFrequency = 0.05, IsSnapToTickEnabled = true,
+                Value = wc.Scale, Width = 120, VerticalAlignment = VerticalAlignment.Center,
             };
 
-            var row = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(0, 0, 0, 4),
-            };
-            row.Children.Add(nameBlock);
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 3) };
             row.Children.Add(visibleBox);
-            row.Children.Add(scaleLabel);
+            row.Children.Add(nameBlock);
             row.Children.Add(scaleSlider);
 
             WidgetRows.Children.Add(row);
             _widgetRows.Add(new WidgetRow(visibleBox, scaleSlider, id));
         }
 
-        // Chart: time-window combo
         ChartWindowBox.ItemsSource = ChartConfig.SupportedWindows.Select(w => $"{(int)w} s").ToList();
         var selectedWindowIdx = Array.IndexOf(ChartConfig.SupportedWindows, config.Chart.WindowSeconds);
-        ChartWindowBox.SelectedIndex = selectedWindowIdx >= 0 ? selectedWindowIdx : 1; // default 60 s
+        ChartWindowBox.SelectedIndex = selectedWindowIdx >= 0 ? selectedWindowIdx : 1;
 
-        // Chart: per-series checkboxes
+        ChartSeriesRows.Children.Clear();
+        _chartSeriesRows.Clear();
         foreach (var def in ChartSeriesCatalog.All)
         {
             var cb = new CheckBox
             {
                 Content = def.Name,
                 IsChecked = ChartSeriesCatalog.IsEnabled(config.Chart, def.Id),
-                Margin = new Thickness(0, 0, 0, 2),
+                Width = 95, Margin = new Thickness(0, 0, 0, 2),
             };
             ChartSeriesRows.Children.Add(cb);
             _chartSeriesRows.Add(new ChartSeriesRow(cb, def.Id));
@@ -109,12 +93,6 @@ public partial class SettingsWindow : Window
         RefreshSavedLayoutList();
     }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Writes form controls back to <see cref="_config"/> without closing the dialog.
-    /// Extracted so Save can capture in-progress edits before snapshotting.
-    /// </summary>
     private void WriteFormToConfig()
     {
         if (int.TryParse(PortBox.Text, out var port))
@@ -137,12 +115,10 @@ public partial class SettingsWindow : Window
             wc.Scale = Math.Clamp(row.ScaleSlider.Value, 0.5, 2.5);
         }
 
-        // Chart: write window selection back to config.
         int winIdx = ChartWindowBox.SelectedIndex;
         if (winIdx >= 0 && winIdx < ChartConfig.SupportedWindows.Length)
             _config.Chart.WindowSeconds = ChartConfig.SupportedWindows[winIdx];
 
-        // Chart: write per-series enabled flags.
         foreach (var row in _chartSeriesRows)
             _config.Chart.Series[row.Id.ToString()] = row.EnabledBox.IsChecked == true;
     }
@@ -156,16 +132,17 @@ public partial class SettingsWindow : Window
             SavedLayoutBox.SelectedItem = selected;
     }
 
-    // ─── Apply ──────────────────────────────────────────────────────────────
+    // ─── Actions ──────────────────────────────────────────────────────────────
+    // Decision: Apply keeps the flyout open (unlike the old modal which closed) so the
+    // user can keep tweaking live; dismissal is explicit via the close button / F9 / hover-out.
 
     private void OnApply(object sender, RoutedEventArgs e)
     {
         WriteFormToConfig();
-        DialogResult = true;
-        Close();
+        ApplyRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    // ─── Named layout actions ────────────────────────────────────────────────
+    private void OnClose(object sender, RoutedEventArgs e) => CloseRequested?.Invoke(this, EventArgs.Empty);
 
     private void OnSaveLayout(object sender, RoutedEventArgs e)
     {
@@ -183,7 +160,6 @@ public partial class SettingsWindow : Window
         if (SavedLayoutBox.SelectedItem is not string name) return;
         if (!_config.LoadLayout(name)) return;
 
-        // Reflect the loaded state in form controls.
         LayoutBox.SelectedItem = _config.Layout;
         HudScaleSlider.Value = _config.Scale;
         foreach (var row in _widgetRows)
@@ -192,10 +168,7 @@ public partial class SettingsWindow : Window
             row.VisibleBox.IsChecked = wc.Visible;
             row.ScaleSlider.Value = Math.Clamp(wc.Scale, 0.5, 2.5);
         }
-
-        // Apply and close so OverlayWindow picks up the new layout via its existing path.
-        DialogResult = true;
-        Close();
+        ApplyRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnRenameLayout(object sender, RoutedEventArgs e)
