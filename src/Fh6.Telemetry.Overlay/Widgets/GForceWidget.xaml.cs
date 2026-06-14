@@ -59,12 +59,7 @@ public partial class GForceWidget : UserControl
 
     // ── Brushes (resolved once, from theme or fallback) ──────────────────────
 
-    private SolidColorBrush? _brushGood;
-    private SolidColorBrush? _brushWarn;
-    private SolidColorBrush? _brushDanger;
-    private bool _brushesResolved;
-
-    // Frozen fallback brushes (never change, no allocation per frame).
+    // Frozen semantic brushes (never change, no allocation per frame).
     private static readonly SolidColorBrush FallbackGood   = Freeze(Color.FromRgb(0x5A, 0xD1, 0x5A));
     private static readonly SolidColorBrush FallbackWarn   = Freeze(Color.FromRgb(0xE0, 0xC9, 0x3A));
     private static readonly SolidColorBrush FallbackDanger = Freeze(Color.FromRgb(0xE0, 0x5A, 0x5A));
@@ -196,12 +191,10 @@ public partial class GForceWidget : UserControl
         // Use actual g values (not clamped canvas coords).
         double mag = Math.Sqrt(rawLat * rawLat + rawLong * rawLong);
 
-        EnsureBrushes();
-        Dot.Fill = mag > 1.0
-            ? (_brushDanger ?? FallbackDanger)
-            : mag > 0.85
-                ? (_brushWarn   ?? FallbackWarn)
-                : (_brushGood   ?? FallbackGood);
+        // Semantic grip color (not theme accent): green inside, amber near, red beyond the 1g ring.
+        Dot.Fill = mag > 1.0 ? FallbackDanger
+                 : mag > 0.85 ? FallbackWarn
+                 : FallbackGood;
 
         // ── Tether ────────────────────────────────────────────────────────────
         if (_tether is not null)
@@ -290,19 +283,6 @@ public partial class GForceWidget : UserControl
         Canvas.SetLeft(_peakMarker, _peakCanvasX - pmHalf);
         Canvas.SetTop(_peakMarker,  _peakCanvasY - pmHalf);
         _peakMarker.Visibility = Visibility.Visible;
-    }
-
-    // ── Brush resolution ─────────────────────────────────────────────────────
-
-    private void EnsureBrushes()
-    {
-        if (_brushesResolved) return;
-        if (!IsLoaded) return; // Resources not yet in tree — defer.
-
-        _brushGood   = TryFindResource("Fh6.Good")   as SolidColorBrush;
-        _brushWarn   = TryFindResource("Fh6.Warn")   as SolidColorBrush;
-        _brushDanger = TryFindResource("Fh6.Danger") as SolidColorBrush;
-        _brushesResolved = true;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

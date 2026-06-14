@@ -21,9 +21,9 @@
                 <Line x:Name="HLine" Stroke="#33FFFFFF" StrokeThickness="1"/>
                 <Line x:Name="VLine" Stroke="#33FFFFFF" StrokeThickness="1"/>
                 <!-- G-force dot — semantic: changes to danger color near limit (hardcoded in code-behind) -->
+                <!-- Fill is set in code-behind (semantic grip color: green/amber/red). -->
                 <Ellipse x:Name="Dot"
-                         Width="10" Height="10"
-                         Fill="{DynamicResource Fh6.Accent}"/>
+                         Width="10" Height="10"/>
             </Canvas>
             <TextBlock x:Name="GLabel"
                        Text="{Binding GText}"
