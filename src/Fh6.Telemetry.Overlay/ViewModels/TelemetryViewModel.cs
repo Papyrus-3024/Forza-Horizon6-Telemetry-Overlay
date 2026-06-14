@@ -84,6 +84,24 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
     public double WorldX { get => _worldX; set => _worldX = value; }
     public double WorldZ { get => _worldZ; set => _worldZ = value; }
 
+    // ── Per-corner tire telemetry (for tire widget) ──────────────────────────
+    private double _tireTempFL; private double _tireTempFR;
+    private double _tireTempRL; private double _tireTempRR;
+    private double _tireSlipFL; private double _tireSlipFR;
+    private double _tireSlipRL; private double _tireSlipRR;
+
+    // Tire temperatures (°F, one per corner)
+    public double TireTempFL { get => _tireTempFL; set => _tireTempFL = value; }
+    public double TireTempFR { get => _tireTempFR; set => _tireTempFR = value; }
+    public double TireTempRL { get => _tireTempRL; set => _tireTempRL = value; }
+    public double TireTempRR { get => _tireTempRR; set => _tireTempRR = value; }
+
+    // Combined slip per corner (0 = full grip; higher = more slip)
+    public double TireSlipFL { get => _tireSlipFL; set => _tireSlipFL = value; }
+    public double TireSlipFR { get => _tireSlipFR; set => _tireSlipFR = value; }
+    public double TireSlipRL { get => _tireSlipRL; set => _tireSlipRL = value; }
+    public double TireSlipRR { get => _tireSlipRR; set => _tireSlipRR = value; }
+
     // ── Shift lights ─────────────────────────────────────────────────────────
     private Brush _light1 = Off;
     private Brush _light2 = Off;
@@ -169,6 +187,16 @@ public sealed class TelemetryViewModel : INotifyPropertyChanged
         // World position: any change in the raw float is meaningful (minimap accuracy).
         SetDouble(ref _worldX, r.PositionX, nameof(WorldX));
         SetDouble(ref _worldZ, r.PositionZ, nameof(WorldZ));
+
+        // Per-corner tire telemetry
+        SetDouble(ref _tireTempFL, r.TireTemp.FrontLeft,        nameof(TireTempFL));
+        SetDouble(ref _tireTempFR, r.TireTemp.FrontRight,       nameof(TireTempFR));
+        SetDouble(ref _tireTempRL, r.TireTemp.RearLeft,         nameof(TireTempRL));
+        SetDouble(ref _tireTempRR, r.TireTemp.RearRight,        nameof(TireTempRR));
+        SetDouble(ref _tireSlipFL, r.TireCombinedSlip.FrontLeft,  nameof(TireSlipFL));
+        SetDouble(ref _tireSlipFR, r.TireCombinedSlip.FrontRight, nameof(TireSlipFR));
+        SetDouble(ref _tireSlipRL, r.TireCombinedSlip.RearLeft,   nameof(TireSlipRL));
+        SetDouble(ref _tireSlipRR, r.TireCombinedSlip.RearRight,  nameof(TireSlipRR));
 
         var shift = GearShifts.Detect(_prevGear, r.Gear);
         if (shift == ShiftDirection.Up)        SetStr(ref _lastShift, $"up -> {r.Gear}",   nameof(LastShift));

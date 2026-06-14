@@ -4,6 +4,7 @@ using Fh6.Telemetry.Core;
 using Fh6.Telemetry.Overlay.Diagnostics;
 using Fh6.Telemetry.Overlay.Settings;
 using Fh6.Telemetry.Overlay.Telemetry;
+using Fh6.Telemetry.Overlay.Theming;
 using Fh6.Telemetry.Overlay.ViewModels;
 
 namespace Fh6.Telemetry.Overlay;
@@ -25,6 +26,9 @@ public partial class App : Application
         // Ensure every WidgetId has a config entry (fills missing keys from the active seed).
         config.Normalize(config.Layout);
 
+        // Apply the active theme into Application.Resources before any window is shown.
+        ThemeApplier.Apply(config.ThemePreset, config.CustomAccent);
+
         var viewModel = new TelemetryViewModel();
         var window = new OverlayWindow(viewModel, config);
 
@@ -32,6 +36,7 @@ public partial class App : Application
 
         window.SettingsApplied += (_, _) =>
         {
+            ThemeApplier.Apply(config.ThemePreset, config.CustomAccent);
             _pump?.Dispose();
             StartPump(viewModel, config, replayFile, speed, window);
         };

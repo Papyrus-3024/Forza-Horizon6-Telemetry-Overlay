@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Fh6.Telemetry.Overlay.Theming;
 using Fh6.Telemetry.Overlay.Widgets;
 
 namespace Fh6.Telemetry.Overlay.Settings;
@@ -25,6 +26,13 @@ public partial class SettingsWindow : Window
         LayoutBox.SelectedItem = config.Layout;
         OpacitySlider.Value = config.Opacity;
         HudScaleSlider.Value = config.Scale;
+
+        ThemePresetBox.ItemsSource = ThemePalette.PresetNames;
+        ThemePresetBox.SelectedItem =
+            ThemePalette.PresetNames.Any(n => n.Equals(config.ThemePreset, StringComparison.OrdinalIgnoreCase))
+            ? config.ThemePreset
+            : "DarkGlass";
+        CustomAccentBox.Text = config.CustomAccent ?? string.Empty;
 
         // Ensure all widget keys exist before reading them.
         config.Normalize(config.Layout);
@@ -116,6 +124,11 @@ public partial class SettingsWindow : Window
             _config.Layout = layout;
         _config.Opacity = OpacitySlider.Value;
         _config.Scale = HudScaleSlider.Value;
+
+        if (ThemePresetBox.SelectedItem is string preset)
+            _config.ThemePreset = preset;
+        var accent = CustomAccentBox.Text.Trim();
+        _config.CustomAccent = string.IsNullOrEmpty(accent) ? null : accent;
 
         foreach (var row in _widgetRows)
         {
