@@ -1,8 +1,8 @@
-# FH6 Web Replay
+# FH6 Web Race-Review Workbench
 
-A lightweight, dependency-free web app that replays an FH6 "Data Out" telemetry
-capture from a **top-down view over the Forza Horizon 6 world map**, with live
-telemetry readouts.
+A lightweight, dependency-free web app for **reviewing a captured FH6 "Data Out"
+drive**: time-synced telemetry charts, a top-down track path, a live readout, and
+a scrubber. No build step, no framework — plain Node http server + vanilla ES modules.
 
 ## Run
 
@@ -12,76 +12,59 @@ npm install   # no dependencies, but keeps the workflow conventional
 npm start     # serves http://localhost:3000
 ```
 
-Then open <http://localhost:3000>.
+Then open <http://localhost:3000>. Set a different port with `PORT=8080 npm start`.
 
-Set a different port with `PORT=8080 npm start`.
+Deep-link straight to a bundled capture with `?capture=<name>`, e.g.
+<http://localhost:3000/?capture=sample-drive.jsonl>.
 
 ## What it does
 
-- Loads an FH6 capture (JSONL: each line `{"t": <ms>, "len": 324, "b64": "<packet>"}`).
-  Packets are decoded **client-side** with `DataView` (little-endian) into a
-  per-frame array (position, speed, rpm, gear, throttle/brake, steer, …).
-- Draws the selected **season map** as a top-down backdrop you can **pan (drag)**
-  and **zoom (scroll wheel)**.
-- Overlays the car's **path** (polyline of world X/Z) and a **moving marker**
-  (a heading arrow) for the current frame.
-- **Replay controls:** play/pause (also Spacebar), a scrubber that seeks by
-  capture time `t`, and a playback-speed selector (0.25×–8×).
-- **Telemetry panel** updates live: speed (km/h + mph), gear, RPM, throttle %,
-  brake %, steer, race-on flag, world X/Z, plus throttle/brake/RPM bars.
+- **Loads a capture** (bundled dropdown or a local file picker) and decodes every
+  324-byte packet **client-side** into a per-frame array (the full documented field
+  set: position, orientation, speed, rpm, per-wheel slip/temp/suspension, g-force,
+  boost, fuel, lap data, inputs, …).
+- **Synced charts** — a stack of time-aligned traces (speed, RPM, throttle/brake,
+  steer, lat/long G) sharing one time axis, with a crosshair at the cursor. Click or
+  drag any chart to seek.
+- **Track path** — auto-fit top-down plot of the world X/Z path with start/end dots
+  and a car marker oriented by `Yaw`. Drag to pan, scroll to zoom.
+- **Live readout** — speed (km/h + mph), gear, RPM, throttle/brake %, steer, boost,
+  fuel %, lap, race position, world X/Z, lat/long G, plus input bars.
+- **Transport** — play/pause (Spacebar), a time scrubber, a playback-speed selector
+  (0.25×–8×), and a lap selector that jumps to a lap's start.
 
-## Loading a capture
+## Capture formats
 
-Two ways, use either:
+The parser **auto-detects** two formats:
 
-1. **Bundled** dropdown — lists `.jsonl` files in `web/captures/`
-   (served via `/api/captures` and `/api/capture/:name`).
-2. **From file** picker — reads any `.jsonl` capture directly in the browser.
+1. **JSONL** — each line `{"t": <ms>, "len": 324, "b64": "<packet>"}` (the CLI's
+   capture format). Timing comes from `t`.
+2. **Raw `.bin`** — a stream of fixed **324-byte** little-endian packets, no wrapper.
+   Capture time is derived from the in-packet `TimestampMs` (u32-wrap aware), falling
+   back to 60 Hz spacing if those timestamps are flat. A trailing partial packet is
+   ignored with a console warning.
 
-To add your own bundled captures, drop `.jsonl` files into `web/captures/`
-(they are git-ignored by default; `sample-drive.jsonl` is committed so the
-dropdown shows a real drive out of the box).
+Load either via the **Bundled** dropdown (`.jsonl`/`.bin` in `web/captures/`, served
+by `/api/captures` + `/api/capture/:name`) or the **From file** picker. Two samples
+are committed — `sample-drive.jsonl` and the equivalent `sample-drive.bin` — so both
+paths work out of the box. Other captures dropped in `web/captures/` are git-ignored.
 
-## World → map calibration
+## Optional world map
 
-The world positions are in meters and have no built-in mapping to map-image
-pixels, so alignment is done in two stages:
-
-- **Auto-fit (default):** the path's X/Z bounding box is scaled and centered to
-  fill the view, so you always see something without any calibration.
-- **Manual nudge sliders** to line the path up on the map by eye:
-  - **Scale** — resize the path relative to the map.
-  - **Offset X / Offset Y** — slide the path in pixels.
-  - **Rotation°** — rotate the path (world and map axes rarely agree).
-  - **Flip Z axis** — mirror the ground-plane Z axis if the path is reversed.
-  - **Re-auto-fit** — recompute the auto-fit and reset pan/zoom.
-  - **Reset nudge** — clear the manual sliders (keeps the Flip toggle).
-
-Map pan/zoom (mouse) is separate from calibration: the map is a fixed backdrop
-and the sliders move the **path** over it. Calibration is eyeballed — there is no
-georeferenced transform between world meters and map pixels.
-
-## Map assets (AVIF)
-
-The four seasonal maps are large AVIF images (~8192², 50–60 MB each). Browsers
-render AVIF natively. They are **not committed** (git-ignored under
-`public/maps/*.avif`).
-
-Place them at:
-
-```
-web/public/maps/spring.avif
-web/public/maps/summer.avif
-web/public/maps/autumn.avif
-web/public/maps/winter.avif
-```
-
-If a season image is missing, the app still runs and shows a neutral grid
-background with a note in the Map panel. `/api/maps` reports which are present.
+The track view needs no assets. If you place the large seasonal AVIF maps at
+`web/public/maps/{spring,summer,autumn,winter}.avif` (~50–60 MB each, **not
+committed**), the matching season is drawn as a backdrop under the path; otherwise
+the path renders over a neutral grid. `/api/maps` reports which are present.
 
 ## Packet format
 
-Offsets used (little-endian, from `FH6_DATA_OUT_DOC.md`): IsRaceOn s32@0,
-TimestampMs u32@4, EngineMaxRpm f32@8, CurrentEngineRpm f32@16, PositionX f32@244,
-PositionY f32@248, PositionZ f32@252, Speed f32@256 (m/s), Accel u8@315,
-Brake u8@316, Gear u8@319, Steer s8@320. Ground plane is X/Z.
+Full FH6 layout (324 bytes, little-endian) is in `parser.js`, verified against
+`../FH6_DATA_OUT_DOC.md`. FH6 inserts `CarGroup`, `SmashableVelDiff`, and
+`SmashableMass` between `NumCylinders` and `PositionX`.
+
+## Tests
+
+```sh
+cd web
+npm test   # node --test: parser decode, format auto-detect, lap splitting
+```
